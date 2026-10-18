@@ -1,5 +1,8 @@
 # 🎓 Tuition & MIST Study Routine Planner — Real-Time SaaS PWA
 
+> 🌐 **Live Web App:** [https://mrpanda12470-cmd.github.io/mist-tuition-routine-planner/](https://mrpanda12470-cmd.github.io/mist-tuition-routine-planner/)  
+> 📦 **GitHub Repository:** [https://github.com/mrpanda12470-cmd/mist-tuition-routine-planner](https://github.com/mrpanda12470-cmd/mist-tuition-routine-planner)
+
 A modern, multi-user web application and Progressive Web App (PWA) for managing tuition schedules, daily study routines, track distributions, and financial tracking with real-time cloud sync and offline persistence.
 
 ---
