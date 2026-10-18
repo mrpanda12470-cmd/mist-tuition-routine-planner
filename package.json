@@ -1,0 +1,14 @@
+{
+  "name": "mist-tuition-routine-planner",
+  "version": "2.0.0",
+  "description": "Tuition & MIST Study Routine Planner with Real-time Cloud Sync, PWA, and Authentication",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "npx -y serve .",
+    "deploy:firebase": "npx -y firebase-tools deploy"
+  },
+  "keywords": ["routine", "planner", "tuition", "mist", "firebase", "pwa"],
+  "author": "",
+  "license": "MIT"
+}
