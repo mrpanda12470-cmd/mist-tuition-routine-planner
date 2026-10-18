@@ -14,103 +14,173 @@
 
   <!-- Tailwind CSS & Google Fonts -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
           colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
+            dark: {
+              950: '#06080d',
+              900: '#0c0f17',
+              850: '#111520',
+              800: '#171c2b',
+              700: '#22293d',
+            },
+            accent: {
+              violet: '#8b5cf6',
+              indigo: '#6366f1',
+              cyan: '#06b6d4',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#f43f5e',
             }
           },
           animation: {
             'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'bounce-subtle': 'bounce 2s infinite',
+            'float-slow': 'float 6s ease-in-out infinite',
+            'glow-pulse': 'glowPulse 3s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-8px)' },
+            },
+            glowPulse: {
+              '0%': { opacity: '0.4', filter: 'blur(30px)' },
+              '100%': { opacity: '0.8', filter: 'blur(45px)' },
+            }
           }
         }
       }
     }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      background-color: #06080d;
+      background-image: 
+        radial-gradient(circle at 18% 10%, rgba(99, 102, 241, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 82% 25%, rgba(6, 182, 212, 0.10) 0%, transparent 40%),
+        radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+      background-attachment: fixed;
     }
     .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
     .custom-scroll::-webkit-scrollbar-track {
       background: transparent;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: #334155;
+      background: #1f273d;
       border-radius: 9999px;
     }
-    .dark .custom-scroll::-webkit-scrollbar-thumb {
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
       background: #334155;
     }
-    .light .custom-scroll::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+
+    /* Premium Glassmorphic Surfaces */
+    .glass-surface {
+      background: rgba(14, 18, 29, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 12px 36px -12px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
     }
+    .glass-surface-subtle {
+      background: rgba(18, 24, 38, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-surface-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-surface-hover:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 16px 40px -12px rgba(99, 102, 241, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      transform: translateY(-1.5px);
+    }
+
+    /* Gradient Accent Borders */
+    .border-gradient-top {
+      position: relative;
+    }
+    .border-gradient-top::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-color, #6366f1), transparent);
+      border-radius: 9999px;
+    }
+
     /* Smooth progress bar transitions */
     .progress-bar-fill {
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     /* Drag and drop helper styles */
     .dragging {
-      opacity: 0.4;
-      transform: scale(0.98);
+      opacity: 0.35;
+      transform: scale(0.97);
     }
     .drag-over {
-      border-color: #6366f1 !important;
-      background-color: rgba(99, 102, 241, 0.1) !important;
+      border-color: #8b5cf6 !important;
+      background-color: rgba(139, 92, 246, 0.12) !important;
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+<body class="min-h-screen text-slate-100 antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200">
 
   <!-- ========================================== -->
   <!-- 1. AUTHENTICATION VIEW (Shown when logged out) -->
   <!-- ========================================== -->
-  <div id="authView" class="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-slate-950">
-    <!-- Ambient glowing backgrounds -->
-    <div class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div id="authView" class="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
+    <!-- Ambient glowing background orbs -->
+    <div class="absolute -top-32 -left-32 w-[450px] h-[450px] bg-gradient-to-br from-violet-600/25 via-indigo-600/20 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse-fast"></div>
+    <div class="absolute -bottom-32 -right-32 w-[450px] h-[450px] bg-gradient-to-tl from-cyan-500/20 via-indigo-600/15 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-950/15 rounded-full blur-[100px] pointer-events-none"></div>
 
     <div class="relative w-full max-w-md">
       <!-- Card Container -->
-      <div class="backdrop-blur-xl bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-indigo-950/40 space-y-6">
+      <div class="glass-surface border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/60 space-y-6 relative overflow-hidden">
+        <!-- Top subtle accent light -->
+        <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-48 bg-gradient-to-b from-indigo-500/30 via-violet-500/10 to-transparent rounded-full blur-2xl pointer-events-none"></div>
         
         <!-- App Branding -->
-        <div class="text-center space-y-2">
-          <div class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 font-extrabold text-white text-2xl shadow-xl shadow-indigo-500/30">
+        <div class="text-center space-y-2 relative">
+          <div class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-500 to-cyan-400 font-extrabold text-white text-2xl shadow-xl shadow-indigo-500/25 ring-1 ring-white/20">
             CE
           </div>
-          <h1 class="text-2xl font-extrabold tracking-tight text-white">Tuition &amp; Routine Hub</h1>
-          <p class="text-xs text-slate-400">Cloud-Synced SaaS Planner for Manikdi Hub &amp; MIST Finals</p>
+          <h1 class="text-2xl font-extrabold tracking-tight text-white font-sans">Tuition &amp; Routine Hub</h1>
+          <p class="text-xs text-slate-400 font-body">Cloud-Synced SaaS Planner for Manikdi Hub &amp; MIST Finals</p>
           <div class="flex items-center justify-center gap-2 pt-1">
-            <span class="inline-flex items-center gap-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-300">
-              <span class="h-1.5 w-1.5 rounded-full bg-indigo-400"></span> Real-Time Firestore
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/25 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-300">
+              <span class="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse"></span> Real-Time Firestore
             </span>
-            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> PWA Ready
             </span>
           </div>
         </div>
 
         <!-- Auth Tabs (Sign In / Sign Up) -->
-        <div class="flex rounded-xl bg-slate-950/80 p-1 border border-slate-800 text-xs font-semibold">
-          <button id="authTabSignIn" class="flex-1 py-2 rounded-lg text-center transition-all bg-indigo-600 text-white shadow">
+        <div class="flex rounded-xl bg-black/40 p-1 border border-white/10 text-xs font-semibold backdrop-blur-sm">
+          <button id="authTabSignIn" class="flex-1 py-2 rounded-lg text-center transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-1 ring-white/15">
             Sign In
           </button>
           <button id="authTabSignUp" class="flex-1 py-2 rounded-lg text-center transition-all text-slate-400 hover:text-white">
@@ -119,7 +189,7 @@
         </div>
 
         <!-- Google One-Click Button -->
-        <button id="btnGoogleAuth" type="button" class="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-bold transition shadow-sm hover:border-slate-600 active:scale-[0.99]">
+        <button id="btnGoogleAuth" type="button" class="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 hover:text-white text-xs font-bold transition-all shadow-sm hover:border-white/20 active:scale-[0.98]">
           <svg class="h-4 w-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -130,8 +200,8 @@
         </button>
 
         <div class="relative flex items-center justify-center">
-          <div class="w-full border-t border-slate-800"></div>
-          <span class="absolute bg-slate-900 px-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">or with email</span>
+          <div class="w-full border-t border-white/10"></div>
+          <span class="absolute bg-[#0e131f] px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">or email</span>
         </div>
 
         <!-- Auth Form -->
@@ -139,13 +209,13 @@
           <!-- Name field (Only shown for Sign Up) -->
           <div id="authNameField" class="hidden space-y-1">
             <label class="text-[11px] font-semibold text-slate-300">Full Name</label>
-            <input type="text" id="authDisplayName" placeholder="e.g. Shakil Ahmed" class="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="text" id="authDisplayName" placeholder="e.g. Shakil Ahmed" class="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition-all" />
           </div>
 
           <!-- Email field -->
           <div class="space-y-1">
             <label class="text-[11px] font-semibold text-slate-300">Email Address</label>
-            <input type="email" id="authEmail" required placeholder="scholar@example.com" class="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="email" id="authEmail" required placeholder="scholar@example.com" class="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition-all" />
           </div>
 
           <!-- Password field -->
@@ -154,11 +224,11 @@
               <label class="text-[11px] font-semibold text-slate-300">Password</label>
               <button type="button" id="btnForgotPass" class="text-[11px] text-indigo-400 hover:text-indigo-300 hover:underline">Forgot password?</button>
             </div>
-            <input type="password" id="authPassword" required placeholder="••••••••" class="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="password" id="authPassword" required placeholder="••••••••" class="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition-all" />
           </div>
 
           <!-- Submit Button -->
-          <button type="submit" id="btnAuthSubmit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition active:scale-[0.99] flex items-center justify-center gap-2">
+          <button type="submit" id="btnAuthSubmit" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 hover:from-violet-500 hover:to-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 ring-1 ring-white/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
             <span id="authSubmitText">Sign In</span>
             <svg id="authSubmitSpinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -171,8 +241,8 @@
         <div id="authAlert" class="hidden rounded-xl p-3 text-xs border"></div>
 
         <!-- Quick 1-Click Evaluation / Demo Mode -->
-        <div class="pt-2 border-t border-slate-800/80 space-y-2">
-          <button id="btnQuickDemo" type="button" class="w-full py-2 px-3 rounded-xl border border-dashed border-indigo-500/50 bg-indigo-950/20 hover:bg-indigo-900/30 text-indigo-300 hover:text-indigo-200 text-xs font-semibold transition flex items-center justify-center gap-2">
+        <div class="pt-2 border-t border-white/10 space-y-2">
+          <button id="btnQuickDemo" type="button" class="w-full py-2.5 px-3 rounded-xl border border-dashed border-indigo-500/40 bg-indigo-500/[0.08] hover:bg-indigo-500/[0.15] text-indigo-300 hover:text-indigo-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
             <span>⚡ Instant Demo Access (No Firebase Key Required)</span>
           </button>
 
@@ -195,29 +265,29 @@
   <div id="mainAppView" class="hidden min-h-screen flex flex-col pb-20 sm:pb-8">
 
     <!-- Top Sticky Header -->
-    <header class="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 dark:bg-slate-950/90 backdrop-blur-md transition-colors">
+    <header class="sticky top-0 z-30 border-b border-white/[0.07] bg-[#06080d]/85 backdrop-blur-xl transition-all">
       <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           
           <!-- Logo & Meta -->
           <div class="flex items-center justify-between sm:justify-start gap-3">
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 font-bold text-white shadow-lg shadow-indigo-500/20">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-500 to-cyan-400 font-extrabold text-white shadow-lg shadow-indigo-500/25 ring-1 ring-white/20">
                 CE
               </div>
               <div>
                 <div class="flex flex-wrap items-center gap-2">
-                  <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Tuition &amp; Routine Hub</h1>
-                  <span class="rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-300 border border-indigo-500/30">Manikdi Hub</span>
-                  <span id="userStatusBadge" class="hidden sm:inline-flex rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/30">Cloud Sync Active</span>
+                  <h1 class="text-base sm:text-lg font-bold tracking-tight text-white font-sans">Tuition &amp; Routine Hub</h1>
+                  <span class="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-300 border border-indigo-500/25">Base: Manikdi</span>
+                  <span id="userStatusBadge" class="hidden sm:inline-flex rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/25">Live Cloud Sync</span>
                 </div>
-                <p class="text-[11px] text-slate-400 hidden sm:block">10 Students (35 Sessions/Wk) • 1.1–1.5h/Session • MIST CE-411, CE-413 &amp; CE-451 Finals</p>
+                <p class="text-[11px] text-slate-400 hidden sm:block font-body">10 Students (35 Sessions/Wk) • 1.1–1.5h/Session • MIST CE-411, CE-413 &amp; CE-451 Finals</p>
               </div>
             </div>
 
             <!-- Sync Indicator Mobile -->
             <div class="flex sm:hidden items-center gap-1.5" id="mobileSyncWrapper">
-              <span id="syncDotMobile" class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span id="syncDotMobile" class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]"></span>
             </div>
           </div>
 
@@ -225,13 +295,13 @@
           <div class="flex items-center justify-between sm:justify-end gap-2">
             
             <!-- Live Cloud Sync Indicator -->
-            <div id="syncStatusBadge" class="hidden md:flex items-center gap-2 rounded-xl bg-slate-900 border border-slate-800 px-3 py-1.5 text-xs text-slate-300" title="Firestore Real-time Sync Status">
-              <span id="syncDot" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div id="syncStatusBadge" class="hidden md:flex items-center gap-2 rounded-xl bg-white/[0.04] border border-white/10 px-3 py-1.5 text-xs text-slate-300" title="Firestore Real-time Sync Status">
+              <span id="syncDot" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]"></span>
               <span id="syncText" class="font-medium text-[11px]">Synced ✓</span>
             </div>
 
             <!-- Theme Toggle -->
-            <button id="btnThemeToggle" type="button" class="rounded-xl border border-slate-800 bg-slate-900 p-2 text-slate-400 hover:text-white hover:bg-slate-800 transition" title="Toggle Dark/Light Mode">
+            <button id="btnThemeToggle" type="button" class="rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] p-2 text-slate-400 hover:text-white transition" title="Toggle Dark/Light Mode">
               <!-- Sun Icon -->
               <svg id="themeIconSun" class="hidden h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -243,28 +313,28 @@
             </button>
 
             <!-- Navigation Tabs (Desktop) -->
-            <nav class="hidden lg:flex items-center gap-1 rounded-xl bg-slate-900 p-1 border border-slate-800" aria-label="Main Navigation">
-              <button id="tabBtn-routine" data-tab="routine" class="nav-tab-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
+            <nav class="hidden lg:flex items-center gap-1 rounded-2xl bg-black/40 p-1 border border-white/10 shadow-inner" aria-label="Main Navigation">
+              <button id="tabBtn-routine" data-tab="routine" class="nav-tab-btn rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-1 ring-white/20">
                 Daily Routine
               </button>
-              <button id="tabBtn-study" data-tab="study" class="nav-tab-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+              <button id="tabBtn-study" data-tab="study" class="nav-tab-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/[0.05]">
                 MIST Study Plan
               </button>
-              <button id="tabBtn-tuitions" data-tab="tuitions" class="nav-tab-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+              <button id="tabBtn-tuitions" data-tab="tuitions" class="nav-tab-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/[0.05]">
                 10 Tuitions &amp; Pay
               </button>
-              <button id="tabBtn-timer" data-tab="timer" class="nav-tab-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+              <button id="tabBtn-timer" data-tab="timer" class="nav-tab-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/[0.05]">
                 Focus Timer
               </button>
-              <button id="tabBtn-history" data-tab="history" class="nav-tab-btn rounded-lg px-3 py-1.5 text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+              <button id="tabBtn-history" data-tab="history" class="nav-tab-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/[0.05]">
                 History &amp; Logs
               </button>
             </nav>
 
             <!-- User Avatar & Dropdown -->
             <div class="relative">
-              <button id="btnUserMenu" type="button" class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-1.5 hover:bg-slate-800 transition">
-                <img id="userAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="h-7 w-7 rounded-lg object-cover border border-slate-700" />
+              <button id="btnUserMenu" type="button" class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-1.5 hover:bg-white/[0.08] transition">
+                <img id="userAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="h-7 w-7 rounded-lg object-cover ring-1 ring-indigo-500/50" />
                 <span id="userNameHeader" class="hidden sm:inline-block text-xs font-bold text-white max-w-[100px] truncate">Scholar</span>
                 <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -272,18 +342,18 @@
               </button>
 
               <!-- Dropdown Menu -->
-              <div id="userMenuDropdown" class="hidden absolute right-0 mt-2 w-56 rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur-lg p-2 shadow-2xl z-50 space-y-1">
-                <div class="px-3 py-2 border-b border-slate-800">
-                  <p id="userMenuName" class="text-xs font-bold text-white truncate">Scholar User</p>
-                  <p id="userMenuEmail" class="text-[11px] text-slate-400 truncate">user@manikdi.hub</p>
+              <div id="userMenuDropdown" class="hidden absolute right-0 mt-2 w-56 rounded-2xl glass-surface p-2 shadow-2xl z-50 space-y-1">
+                <div class="px-3 py-2 border-b border-white/10">
+                  <p id="userMenuName" class="text-xs font-bold text-white truncate font-sans">Scholar User</p>
+                  <p id="userMenuEmail" class="text-[11px] text-slate-400 truncate font-mono">user@manikdi.hub</p>
                 </div>
-                <button id="btnExportData" type="button" class="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <button id="btnExportData" type="button" class="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/[0.08] hover:text-white transition">
                   <svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   Export Data (JSON)
                 </button>
-                <button id="btnMenuFirebaseConfig" type="button" class="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <button id="btnMenuFirebaseConfig" type="button" class="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 hover:bg-white/[0.08] hover:text-white transition">
                   <svg class="h-4 w-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   </svg>
@@ -311,65 +381,69 @@
       <!-- ========================================== -->
       <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <!-- Monthly Earnings -->
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-1.5">
+        <div class="glass-surface glass-surface-hover rounded-2xl p-4 sm:p-5 space-y-2 relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-teal-400 to-transparent"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400">Monthly Earnings</span>
-            <span id="kpiActiveStudents" class="rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-400">10 Active</span>
+            <span class="text-xs font-medium text-slate-400 font-body">Monthly Earnings</span>
+            <span id="kpiActiveStudents" class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/20">10 Active</span>
           </div>
-          <p class="text-xl font-extrabold text-white sm:text-2xl">
-            <span id="kpiTotalFee">66,000</span> <span class="text-xs font-normal text-slate-400">BDT</span>
+          <p class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">
+            <span id="kpiTotalFee">66,000</span> <span class="text-xs font-sans font-medium text-slate-400">BDT</span>
           </p>
-          <div class="space-y-1">
-            <div class="flex items-center justify-between text-[11px] text-slate-400">
-              <span>Collected: <span id="kpiCollectedFee" class="font-semibold text-emerald-400">0 BDT</span></span>
-              <span id="kpiPaidPercent" class="font-bold text-slate-300">0%</span>
+          <div class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-body">
+              <span>Collected: <span id="kpiCollectedFee" class="font-semibold text-emerald-400 font-mono">0 BDT</span></span>
+              <span id="kpiPaidPercent" class="font-bold text-slate-300 font-mono">0%</span>
             </div>
-            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div id="kpiPaidProgressBar" class="progress-bar-fill h-full bg-emerald-500" style="width: 0%"></div>
+            <div class="h-1.5 w-full bg-black/40 rounded-full overflow-hidden p-[1px]">
+              <div id="kpiPaidProgressBar" class="progress-bar-fill h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_8px_#10b981]" style="width: 0%"></div>
             </div>
           </div>
         </div>
 
         <!-- Weekly Sessions -->
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-1.5">
+        <div class="glass-surface glass-surface-hover rounded-2xl p-4 sm:p-5 space-y-2 relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500 via-indigo-500 to-transparent"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400">Weekly Sessions</span>
-            <span class="rounded-md bg-indigo-500/10 px-2 py-0.5 text-[11px] font-semibold text-indigo-400">5 / Day</span>
+            <span class="text-xs font-medium text-slate-400 font-body">Weekly Sessions</span>
+            <span class="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-400 border border-indigo-500/20">5 / Day</span>
           </div>
-          <p class="text-xl font-extrabold text-white sm:text-2xl">
-            <span id="kpiWeeklyDone">0</span> / <span id="kpiWeeklyTarget">35</span>
+          <p class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">
+            <span id="kpiWeeklyDone">0</span> <span class="text-slate-500 font-sans font-normal text-lg">/</span> <span id="kpiWeeklyTarget">35</span>
           </p>
-          <div class="space-y-1">
-            <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <div class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-body">
               <span>Target: 35 sessions</span>
-              <span id="kpiSessionsPercent" class="font-bold text-indigo-300">0%</span>
+              <span id="kpiSessionsPercent" class="font-bold text-indigo-300 font-mono">0%</span>
             </div>
-            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div id="kpiSessionsProgressBar" class="progress-bar-fill h-full bg-indigo-500" style="width: 0%"></div>
+            <div class="h-1.5 w-full bg-black/40 rounded-full overflow-hidden p-[1px]">
+              <div id="kpiSessionsProgressBar" class="progress-bar-fill h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full shadow-[0_0_8px_#6366f1]" style="width: 0%"></div>
             </div>
           </div>
         </div>
 
         <!-- Daily Study Allocation -->
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-1.5">
+        <div class="glass-surface glass-surface-hover rounded-2xl p-4 sm:p-5 space-y-2 relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-500 via-orange-400 to-transparent"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400">Daily Study Allocation</span>
-            <span id="kpiStudyModeBadge" class="rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-400">Exam Mode</span>
+            <span class="text-xs font-medium text-slate-400 font-body">Daily Study Allocation</span>
+            <span id="kpiStudyModeBadge" class="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-400 border border-amber-500/20">Exam Mode</span>
           </div>
-          <p class="text-xl font-extrabold text-white sm:text-2xl">
-            <span id="kpiStudyHours">6.5</span> <span class="text-xs font-normal text-slate-400">hrs/day</span>
+          <p class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">
+            <span id="kpiStudyHours">6.5</span> <span class="text-xs font-sans font-medium text-slate-400">hrs/day</span>
           </p>
-          <p class="text-xs text-slate-400 truncate">3 focused blocks (AM, Midday, Night)</p>
+          <p class="text-xs text-slate-400 truncate font-body">3 focused blocks (AM, Midday, Night)</p>
         </div>
 
         <!-- Next MIST Exam -->
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-1.5">
+        <div class="glass-surface glass-surface-hover rounded-2xl p-4 sm:p-5 space-y-2 relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-pink-400 to-transparent"></div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-400">Next MIST Exam</span>
-            <span class="rounded-md bg-rose-500/15 px-2 py-0.5 text-[11px] font-semibold text-rose-300">24 Oct (Sat)</span>
+            <span class="text-xs font-medium text-slate-400 font-body">Next MIST Exam</span>
+            <span class="rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-rose-300 border border-rose-500/25">24 Oct (Sat)</span>
           </div>
-          <p class="text-base font-extrabold text-white sm:text-lg truncate">CE-411 Structural II</p>
-          <p class="text-xs text-slate-400 truncate">Followed by CE-413 (31 Oct) &amp; CE-451</p>
+          <p class="text-lg sm:text-xl font-extrabold text-white font-sans truncate tracking-tight">CE-411 Structural II</p>
+          <p class="text-xs text-slate-400 truncate font-body">Followed by CE-413 (31 Oct) &amp; CE-451</p>
         </div>
       </section>
 
@@ -379,18 +453,21 @@
       <section id="view-routine" class="space-y-6">
         
         <!-- Routine Controls Bar -->
-        <div class="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="glass-surface rounded-2xl p-4 sm:p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border border-white/10">
           <div>
-            <h2 class="text-base font-bold text-white">Smart 5-Per-Day Schedule &amp; Manikdi Route</h2>
-            <p class="text-xs text-slate-400">
-              5 students in Track A (4 days/wk) &amp; 5 students in Track B (3 days/wk) = <strong class="text-slate-200">5 tuitions every day</strong>.
+            <h2 class="text-base font-extrabold text-white font-sans flex items-center gap-2">
+              <span>Smart 5-Per-Day Schedule &amp; Route</span>
+              <span class="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-300 border border-indigo-500/25">Manikdi Hub</span>
+            </h2>
+            <p class="text-xs text-slate-400 font-body mt-0.5">
+              5 students in Track A (4 days/wk) &amp; 5 students in Track B (3 days/wk) = <strong class="text-slate-200">5 sessions every day</strong>.
             </p>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2.5">
             <!-- Mode Select -->
-            <div class="flex items-center gap-1 rounded-xl bg-slate-950 p-1 border border-slate-800">
-              <button data-mode="exam" class="routine-mode-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-indigo-600 text-white shadow">
+            <div class="flex items-center gap-1 rounded-xl bg-black/40 p-1 border border-white/10 backdrop-blur-sm">
+              <button data-mode="exam" class="routine-mode-btn rounded-lg px-2.5 py-1.5 text-xs font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm ring-1 ring-white/15">
                 Exam Prep (1.25h)
               </button>
               <button data-mode="eve" class="routine-mode-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-white">
@@ -402,8 +479,8 @@
             </div>
 
             <!-- Shift Select -->
-            <div class="flex items-center gap-1 rounded-xl bg-slate-950 p-1 border border-slate-800">
-              <button data-shift="afternoon" class="routine-shift-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-cyan-600 text-white shadow">
+            <div class="flex items-center gap-1 rounded-xl bg-black/40 p-1 border border-white/10 backdrop-blur-sm">
+              <button data-shift="afternoon" class="routine-shift-btn rounded-lg px-2.5 py-1.5 text-xs font-bold bg-gradient-to-r from-cyan-600 to-teal-500 text-white shadow-sm ring-1 ring-white/15">
                 Free Morning (2:30–9:45 PM)
               </button>
               <button data-shift="split" class="routine-shift-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-white">
@@ -414,7 +491,7 @@
         </div>
 
         <!-- Day Selector Pills -->
-        <div class="grid grid-cols-7 gap-1.5 sm:gap-2" id="dayButtonsContainer">
+        <div class="grid grid-cols-7 gap-2 sm:gap-2.5" id="dayButtonsContainer">
           <!-- Populated by JS -->
         </div>
 
@@ -423,31 +500,34 @@
           
           <!-- Timeline Blocks (2 Cols) -->
           <div class="lg:col-span-2 space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+            <div class="glass-surface rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 border border-white/10">
               <div>
-                <h3 id="selectedDayTitle" class="text-sm font-bold text-white">Sunday — Track A (4-Day Students)</h3>
-                <p id="selectedDaySubtitle" class="text-xs text-slate-400">Route starts inside Manikdi and completes a single outer loop</p>
+                <h3 id="selectedDayTitle" class="text-sm font-bold text-white font-sans">Sunday — Track A (4-Day Students)</h3>
+                <p id="selectedDaySubtitle" class="text-xs text-slate-400 font-body">Route starts inside Manikdi and completes a single outer loop</p>
               </div>
-              <span id="selectedDayBadge" class="rounded-lg bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 text-xs font-bold text-indigo-300">
+              <span id="selectedDayBadge" class="rounded-xl bg-indigo-500/10 border border-indigo-500/25 px-3 py-1.5 text-xs font-bold text-indigo-300 font-mono">
                 5 Tuitions • 6.5h Study
               </span>
             </div>
 
             <!-- Timeline List -->
-            <div class="space-y-2.5" id="dailyTimelineList">
+            <div class="space-y-3" id="dailyTimelineList">
               <!-- Populated by JS -->
             </div>
           </div>
 
           <!-- Manikdi Hub Route Sequence & Map Stop Order (1 Col) -->
           <div class="space-y-4">
-            <div class="rounded-2xl border border-slate-800 bg-slate-900 p-4 space-y-3">
+            <div class="glass-surface rounded-2xl p-5 space-y-4 border border-white/10">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold text-white">Daily Transit Loop</h3>
-                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-indigo-300">Base: Manikdi</span>
+                <h3 class="text-sm font-bold text-white font-sans flex items-center gap-2">
+                  <span class="flex h-2 w-2 rounded-full bg-cyan-400"></span>
+                  Daily Transit Loop
+                </h3>
+                <span class="rounded-full bg-white/[0.06] border border-white/10 px-2.5 py-0.5 text-[11px] font-semibold text-cyan-300">Zero Backtracking</span>
               </div>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Optimized sequence minimizing Dhaka transit friction. Starts local in Manikdi, branches out, then returns to Manikdi hub.
+              <p class="text-xs text-slate-400 leading-relaxed font-body">
+                Optimized sequence minimizing Dhaka transit friction. Starts inside Manikdi, loops outward, and returns home.
               </p>
 
               <!-- Step Cards -->
@@ -456,12 +536,12 @@
               </div>
 
               <!-- Quick transit summary -->
-              <div class="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs space-y-1.5">
-                <div class="flex items-center justify-between text-slate-300 font-semibold">
+              <div class="rounded-xl border border-white/10 bg-black/40 p-3.5 text-xs space-y-2">
+                <div class="flex items-center justify-between text-slate-300 font-semibold font-body">
                   <span>Estimated Total Transit:</span>
-                  <span class="text-emerald-400 font-mono">~45–55 mins</span>
+                  <span class="text-emerald-400 font-mono font-bold">~45–55 mins</span>
                 </div>
-                <p class="text-[11px] text-slate-500">Average inter-session travel between local Manikdi nodes is 8–12 mins.</p>
+                <p class="text-[11px] text-slate-500 leading-relaxed font-body">Average inter-session travel between local Manikdi nodes is only 8–12 mins.</p>
               </div>
             </div>
           </div>
@@ -480,19 +560,19 @@
         </div>
 
         <!-- Filter & Actions Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-slate-400">Filter Course:</span>
+        <div class="glass-surface rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-white/10">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-slate-400 font-body">Filter Course:</span>
             <div class="flex flex-wrap items-center gap-1.5">
-              <button data-course="ALL" class="course-filter-btn rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white">ALL</button>
-              <button data-course="CE-411" class="course-filter-btn rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white">CE-411</button>
-              <button data-course="CE-413" class="course-filter-btn rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white">CE-413</button>
-              <button data-course="CE-451" class="course-filter-btn rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white">CE-451</button>
+              <button data-course="ALL" class="course-filter-btn rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-sm ring-1 ring-white/15">ALL</button>
+              <button data-course="CE-411" class="course-filter-btn rounded-xl bg-white/[0.05] border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.1]">CE-411</button>
+              <button data-course="CE-413" class="course-filter-btn rounded-xl bg-white/[0.05] border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.1]">CE-413</button>
+              <button data-course="CE-451" class="course-filter-btn rounded-xl bg-white/[0.05] border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.1]">CE-451</button>
             </div>
           </div>
 
-          <button id="btnOpenAddStudyDayModal" type="button" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 text-xs font-bold transition border border-slate-700">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button id="btnOpenAddStudyDayModal" type="button" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 hover:text-white px-3.5 py-2 text-xs font-bold transition-all border border-white/10 active:scale-[0.98]">
+            <svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             Add Custom Task/Milestone
@@ -511,34 +591,37 @@
       <section id="view-tuitions" class="hidden space-y-6">
         
         <!-- Tuitions Management Header -->
-        <div class="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 lg:flex-row lg:items-center lg:justify-between">
-          <div class="space-y-1">
-            <h2 class="text-base font-bold text-white">Tuitions, Progress &amp; Collections</h2>
-            <p class="text-xs text-slate-400">Drag to reorder slots or use controls. Real-time synced with Firestore.</p>
+        <div class="glass-surface rounded-2xl p-4 sm:p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border border-white/10">
+          <div class="space-y-0.5">
+            <h2 class="text-base font-extrabold text-white font-sans flex items-center gap-2">
+              <span>Tuitions &amp; Financial Tracker</span>
+              <span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 border border-emerald-500/25">Real-Time Sync</span>
+            </h2>
+            <p class="text-xs text-slate-400 font-body">Drag to reorder slots or use controls. All changes save instantly to cloud.</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
             <!-- Search input -->
             <div class="relative">
-              <input type="text" id="tuitionSearchInput" placeholder="Search student or area..." class="w-48 sm:w-60 rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none" />
+              <input type="text" id="tuitionSearchInput" placeholder="Search student or area..." class="w-44 sm:w-56 rounded-xl border border-white/10 bg-black/40 px-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition" />
             </div>
 
             <!-- Track filter -->
-            <select id="tuitionTrackFilter" class="rounded-xl border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none">
+            <select id="tuitionTrackFilter" class="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-slate-300 focus:outline-none transition">
               <option value="ALL">All Tracks</option>
               <option value="A">Track A (4d)</option>
               <option value="B">Track B (3d)</option>
             </select>
 
             <!-- Paid filter -->
-            <select id="tuitionPaidFilter" class="rounded-xl border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none">
+            <select id="tuitionPaidFilter" class="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-slate-300 focus:outline-none transition">
               <option value="ALL">All Status</option>
               <option value="paid">Paid</option>
               <option value="unpaid">Unpaid</option>
             </select>
 
             <!-- Add Student button -->
-            <button id="btnOpenAddStudentModal" type="button" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-bold transition shadow-md shadow-indigo-600/30">
+            <button id="btnOpenAddStudentModal" type="button" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-3.5 py-1.5 text-xs font-bold transition shadow-lg shadow-indigo-600/30 ring-1 ring-white/20 active:scale-[0.98]">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -546,13 +629,13 @@
             </button>
 
             <!-- Reset Weekly Counts button -->
-            <button id="btnResetWeeklyCounts" type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 text-xs font-bold transition" title="Archive completed week to history and reset session counter">
-              Reset Week &amp; Archive
+            <button id="btnResetWeeklyCounts" type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 hover:text-white px-3 py-1.5 text-xs font-bold transition active:scale-[0.98]" title="Archive completed week to history and reset session counter">
+              Reset Week
             </button>
 
             <!-- Mark all paid toggle -->
-            <button id="btnMarkAllPaid" type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 text-xs font-bold transition">
-              Toggle All Paid
+            <button id="btnMarkAllPaid" type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 hover:text-white px-3 py-1.5 text-xs font-bold transition active:scale-[0.98]">
+              Toggle Paid
             </button>
           </div>
         </div>
@@ -567,56 +650,58 @@
       <!-- TAB 4: FOCUS & TUITION TIMER -->
       <!-- ========================================== -->
       <section id="view-timer" class="hidden space-y-6">
-        <div class="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900/90 p-6 sm:p-10 text-center space-y-6 backdrop-blur-md">
-          
-          <div class="space-y-1">
-            <span id="timerModeLabel" class="inline-block rounded-full bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 text-xs font-extrabold text-indigo-300">
+        <div class="mx-auto max-w-2xl rounded-3xl glass-surface p-8 sm:p-12 text-center space-y-6 relative overflow-hidden border border-white/10 shadow-2xl">
+          <!-- Glow Behind Timer -->
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="space-y-1 relative">
+            <span id="timerModeLabel" class="inline-block rounded-full bg-indigo-500/10 border border-indigo-500/25 px-3.5 py-1 text-xs font-bold text-indigo-300 font-sans">
               Exam Deep Study (50m)
             </span>
-            <h3 class="text-xl font-bold text-white">Focus &amp; Session Countdown</h3>
-            <p id="timerSubStatus" class="text-xs text-slate-400">Ready to start</p>
+            <h3 class="text-2xl font-extrabold text-white font-sans tracking-tight">Focus &amp; Session Countdown</h3>
+            <p id="timerSubStatus" class="text-xs text-slate-400 font-body">Ready to start</p>
           </div>
 
           <!-- Big Countdown Display -->
-          <div class="py-6">
-            <div id="timerDisplay" class="font-mono text-6xl sm:text-7xl font-extrabold tracking-tight text-white select-none">
+          <div class="py-6 relative">
+            <div id="timerDisplay" class="font-mono text-7xl sm:text-8xl font-black tracking-tight text-white select-none drop-shadow-[0_0_25px_rgba(99,102,241,0.45)]">
               50:00
             </div>
           </div>
 
           <!-- Timer Controls -->
-          <div class="flex flex-wrap items-center justify-center gap-3">
-            <button id="btnTimerStartPause" type="button" class="rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-8 py-3.5 text-sm font-extrabold text-white shadow-xl shadow-indigo-600/30 transition active:scale-95">
+          <div class="flex flex-wrap items-center justify-center gap-3 relative">
+            <button id="btnTimerStartPause" type="button" class="rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 hover:from-violet-500 hover:to-indigo-400 px-9 py-3.5 text-sm font-extrabold text-white shadow-xl shadow-indigo-600/35 ring-1 ring-white/20 transition-all active:scale-95">
               Start Timer
             </button>
-            <button id="btnTimerReset" type="button" class="rounded-2xl border border-slate-700 bg-slate-800 hover:bg-slate-700 px-6 py-3.5 text-sm font-bold text-slate-300 hover:text-white transition active:scale-95">
+            <button id="btnTimerReset" type="button" class="rounded-2xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-6 py-3.5 text-sm font-bold text-slate-300 hover:text-white transition-all active:scale-95">
               Reset
             </button>
-            <button id="btnToggleMute" type="button" class="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3.5 text-xs font-semibold text-slate-400 hover:text-white transition">
+            <button id="btnToggleMute" type="button" class="rounded-2xl border border-white/10 bg-black/40 px-4 py-3.5 text-xs font-semibold text-slate-400 hover:text-white transition-all">
               Sound: ON
             </button>
           </div>
 
           <!-- Preset Selection -->
-          <div class="pt-6 border-t border-slate-800/80 space-y-2">
-            <p class="text-xs font-semibold text-slate-400">Quick Timer Presets</p>
+          <div class="pt-6 border-t border-white/10 space-y-3 relative">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Quick Timer Presets</p>
             <div class="flex flex-wrap items-center justify-center gap-2">
-              <button class="timer-preset-btn rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition" data-minutes="50" data-label="Exam Deep Study">
+              <button class="timer-preset-btn rounded-xl border border-white/10 bg-black/40 hover:bg-white/[0.08] px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95" data-minutes="50" data-label="Exam Deep Study">
                 50m Study
               </button>
-              <button class="timer-preset-btn rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition" data-minutes="25" data-label="Pomodoro Sprint">
+              <button class="timer-preset-btn rounded-xl border border-white/10 bg-black/40 hover:bg-white/[0.08] px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95" data-minutes="25" data-label="Pomodoro Sprint">
                 25m Sprint
               </button>
-              <button class="timer-preset-btn rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition" data-minutes="75" data-label="Standard Tuition (1.25h)">
+              <button class="timer-preset-btn rounded-xl border border-white/10 bg-black/40 hover:bg-white/[0.08] px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95" data-minutes="75" data-label="Standard Tuition (1.25h)">
                 1.25h Tuition
               </button>
-              <button class="timer-preset-btn rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition" data-minutes="66" data-label="Light Tuition (1.1h)">
+              <button class="timer-preset-btn rounded-xl border border-white/10 bg-black/40 hover:bg-white/[0.08] px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95" data-minutes="66" data-label="Light Tuition (1.1h)">
                 1.1h Exam-Eve
               </button>
-              <button class="timer-preset-btn rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition" data-minutes="90" data-label="Long Tuition (1.5h)">
+              <button class="timer-preset-btn rounded-xl border border-white/10 bg-black/40 hover:bg-white/[0.08] px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95" data-minutes="90" data-label="Long Tuition (1.5h)">
                 1.5h Post-Nov
               </button>
-              <button class="timer-preset-btn rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition" data-minutes="15" data-label="Short Rest">
+              <button class="timer-preset-btn rounded-xl border border-white/10 bg-black/40 hover:bg-white/[0.08] px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95" data-minutes="15" data-label="Short Rest">
                 15m Break
               </button>
             </div>
@@ -629,12 +714,12 @@
       <!-- TAB 5: HISTORY & ARCHIVES -->
       <!-- ========================================== -->
       <section id="view-history" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+        <div class="glass-surface rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-white/10">
           <div>
-            <h2 class="text-base font-bold text-white">Archived Weekly Performance</h2>
-            <p class="text-xs text-slate-400">Historical records from your past weekly resets</p>
+            <h2 class="text-base font-extrabold text-white font-sans">Archived Weekly Performance</h2>
+            <p class="text-xs text-slate-400 font-body">Historical snapshots from your completed weekly cycles</p>
           </div>
-          <button id="btnExportHistory" type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 text-xs font-bold transition">
+          <button id="btnExportHistory" type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 hover:text-white px-3.5 py-2 text-xs font-bold transition-all active:scale-95">
             Export History
           </button>
         </div>
@@ -691,11 +776,11 @@
   <!-- ========================================== -->
 
   <!-- Modal 1: Add/Edit Tuition Student -->
-  <div id="tuitionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-    <div class="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-4">
+  <div id="tuitionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-md rounded-3xl glass-surface p-6 sm:p-7 shadow-2xl space-y-4 border border-white/10">
       <div class="flex items-center justify-between">
-        <h3 id="tuitionModalTitle" class="text-base font-bold text-white">Add New Student</h3>
-        <button id="btnCloseTuitionModal" type="button" class="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-800">
+        <h3 id="tuitionModalTitle" class="text-base font-extrabold text-white font-sans">Add New Student</h3>
+        <button id="btnCloseTuitionModal" type="button" class="rounded-xl p-1.5 text-slate-400 hover:text-white hover:bg-white/[0.08] transition">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
@@ -704,50 +789,50 @@
         <input type="hidden" id="modalStudentId" value="" />
 
         <div>
-          <label class="text-[11px] font-semibold text-slate-300">Student Name &amp; Class</label>
-          <input type="text" id="modalStudentName" required placeholder="e.g. Mahadi (Class 5)" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none" />
+          <label class="text-[11px] font-semibold text-slate-300 font-body">Student Name &amp; Class</label>
+          <input type="text" id="modalStudentName" required placeholder="e.g. Mahadi (Class 5)" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition" />
         </div>
 
         <div>
-          <label class="text-[11px] font-semibold text-slate-300">Area / Location</label>
-          <input type="text" id="modalStudentArea" required placeholder="e.g. Manikdi (Local) or Nirjor Cantt" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none" />
+          <label class="text-[11px] font-semibold text-slate-300 font-body">Area / Location</label>
+          <input type="text" id="modalStudentArea" required placeholder="e.g. Manikdi (Local) or Nirjor Cantt" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-[11px] font-semibold text-slate-300">Track &amp; Days</label>
-            <select id="modalStudentTrack" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Track &amp; Schedule</label>
+            <select id="modalStudentTrack" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
               <option value="A">Track A (4 days/wk)</option>
               <option value="B">Track B (3 days/wk)</option>
             </select>
           </div>
           <div>
-            <label class="text-[11px] font-semibold text-slate-300">Days / Week</label>
-            <input type="number" id="modalStudentDays" required min="1" max="7" value="4" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Days / Week</label>
+            <input type="number" id="modalStudentDays" required min="1" max="7" value="4" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none font-mono" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-[11px] font-semibold text-slate-300">Monthly Fee (BDT)</label>
-            <input type="number" id="modalStudentFee" required step="500" value="5000" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Monthly Fee (BDT)</label>
+            <input type="number" id="modalStudentFee" required step="500" value="5000" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none font-mono" />
           </div>
           <div>
-            <label class="text-[11px] font-semibold text-slate-300">Slot Order</label>
-            <input type="number" id="modalStudentOrder" required min="1" max="20" value="1" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Slot Order</label>
+            <input type="number" id="modalStudentOrder" required min="1" max="20" value="1" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none font-mono" />
           </div>
         </div>
 
         <div>
-          <label class="text-[11px] font-semibold text-slate-300">Notes / Routine Details</label>
-          <textarea id="modalStudentNote" rows="2" placeholder="e.g. Start inside Manikdi right after midday break" class="w-full mt-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"></textarea>
+          <label class="text-[11px] font-semibold text-slate-300 font-body">Notes / Routine Details</label>
+          <textarea id="modalStudentNote" rows="2" placeholder="e.g. Start inside Manikdi right after midday break" class="w-full mt-1 rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"></textarea>
         </div>
 
-        <div class="flex items-center justify-end gap-2 pt-2">
-          <button id="btnCancelTuitionModal" type="button" class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white">
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button id="btnCancelTuitionModal" type="button" class="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white transition active:scale-95">
             Cancel
           </button>
-          <button type="submit" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/30">
+          <button type="submit" class="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 ring-1 ring-white/20 transition active:scale-95">
             Save Student
           </button>
         </div>
@@ -756,49 +841,49 @@
   </div>
 
   <!-- Modal 2: Delete Confirmation Modal -->
-  <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-4">
+  <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div class="w-full max-w-sm rounded-3xl glass-surface p-6 shadow-2xl space-y-4 border border-white/10">
       <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/25">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
         </div>
         <div>
-          <h3 class="text-sm font-bold text-white">Remove Student?</h3>
-          <p id="deleteModalStudentName" class="text-xs text-slate-400">This action will delete the student profile.</p>
+          <h3 class="text-sm font-bold text-white font-sans">Remove Student?</h3>
+          <p id="deleteModalStudentName" class="text-xs text-slate-400 font-body">This action will delete the student profile.</p>
         </div>
       </div>
       <div class="flex items-center justify-end gap-2 pt-2">
-        <button id="btnCancelDelete" type="button" class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white">Cancel</button>
-        <button id="btnConfirmDelete" type="button" class="rounded-xl bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-bold text-white">Delete</button>
+        <button id="btnCancelDelete" type="button" class="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white transition active:scale-95">Cancel</button>
+        <button id="btnConfirmDelete" type="button" class="rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-rose-600/30 transition active:scale-95">Delete</button>
       </div>
     </div>
   </div>
 
   <!-- Modal 3: Firebase Config Modal -->
-  <div id="firebaseConfigModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-    <div class="relative w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-4">
+  <div id="firebaseConfigModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-lg rounded-3xl glass-surface p-6 sm:p-7 shadow-2xl space-y-4 border border-white/10">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
           </div>
           <div>
-            <h3 class="text-sm font-bold text-white">Firebase Project Credentials</h3>
-            <p class="text-[11px] text-slate-400">Connect to your personal Firebase backend</p>
+            <h3 class="text-sm font-bold text-white font-sans">Firebase Project Credentials</h3>
+            <p class="text-[11px] text-slate-400 font-body">Connect to your personal Firebase backend</p>
           </div>
         </div>
-        <button id="btnCloseFirebaseModal" type="button" class="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-800">
+        <button id="btnCloseFirebaseModal" type="button" class="rounded-xl p-1.5 text-slate-400 hover:text-white hover:bg-white/[0.08] transition">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
 
-      <p class="text-xs text-slate-300 leading-relaxed">
-        Paste your Firebase configuration object below from your Firebase Console (<span class="text-indigo-400">Project settings &gt; General &gt; Your apps &gt; SDK setup and configuration</span>).
+      <p class="text-xs text-slate-300 leading-relaxed font-body">
+        Paste your Firebase configuration object below from your Firebase Console (<span class="text-indigo-400 font-mono">Project settings &gt; General &gt; Your apps &gt; SDK setup and configuration</span>).
       </p>
 
       <div class="space-y-2">
-        <label class="text-[11px] font-semibold text-slate-300">Firebase Config (JSON or key/value)</label>
-        <textarea id="firebaseConfigInput" rows="7" class="w-full font-mono text-xs rounded-xl border border-slate-700 bg-slate-950 p-3 text-slate-200 placeholder-slate-600 focus:border-indigo-500 focus:outline-none" placeholder='{
+        <label class="text-[11px] font-semibold text-slate-300 font-body">Firebase Config (JSON or key/value)</label>
+        <textarea id="firebaseConfigInput" rows="7" class="w-full font-mono text-xs rounded-xl border border-white/10 bg-black/50 p-3.5 text-slate-200 placeholder-slate-600 focus:border-indigo-500 focus:outline-none transition" placeholder='{
   "apiKey": "AIzaSy...",
   "authDomain": "myproject.firebaseapp.com",
   "projectId": "myproject-id",
@@ -809,12 +894,12 @@
       </div>
 
       <div class="flex items-center justify-between pt-2">
-        <button id="btnResetToDemo" type="button" class="text-xs text-slate-400 hover:text-rose-400 underline">
+        <button id="btnResetToDemo" type="button" class="text-xs text-slate-400 hover:text-rose-400 underline transition">
           Reset to Demo Defaults
         </button>
         <div class="flex items-center gap-2">
-          <button id="btnCancelFirebaseModal" type="button" class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white">Cancel</button>
-          <button id="btnSaveFirebaseConfig" type="button" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/30">Save &amp; Connect</button>
+          <button id="btnCancelFirebaseModal" type="button" class="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white transition active:scale-95">Cancel</button>
+          <button id="btnSaveFirebaseConfig" type="button" class="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 ring-1 ring-white/20 transition active:scale-95">Save &amp; Connect</button>
         </div>
       </div>
     </div>

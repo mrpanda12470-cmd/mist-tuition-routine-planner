@@ -342,13 +342,13 @@ function renderDaySelector() {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = isSelected
-      ? 'flex flex-col items-center justify-center rounded-xl border border-indigo-500 bg-indigo-600 p-2.5 text-white shadow-lg shadow-indigo-600/30 transition'
-      : 'flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition';
+      ? 'flex flex-col items-center justify-center rounded-2xl bg-gradient-to-b from-violet-600 to-indigo-600 p-3 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-white/20 transition-all scale-[1.02]'
+      : 'flex flex-col items-center justify-center rounded-2xl glass-surface-subtle p-3 text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all border border-white/[0.06] hover:border-white/15';
 
     const trackLabel = d.track === 'A' ? 'Track A (4d)' : 'Track B (3d)';
     btn.innerHTML = `
-      <span class="text-xs font-bold sm:text-sm">${d.key}</span>
-      <span class="mt-0.5 text-[10px] ${isSelected ? 'text-indigo-100' : 'text-slate-400'}">${trackLabel}</span>
+      <span class="text-xs font-bold sm:text-sm font-sans">${d.key}</span>
+      <span class="mt-0.5 text-[10px] font-mono ${isSelected ? 'text-indigo-100 font-semibold' : 'text-slate-500'}">${trackLabel}</span>
     `;
 
     btn.addEventListener('click', () => {
@@ -440,15 +440,15 @@ function renderRoutineView() {
   document.querySelectorAll('.routine-mode-btn').forEach(btn => {
     const active = btn.dataset.mode === state.settings.routineMode;
     btn.className = active
-      ? 'routine-mode-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-indigo-600 text-white shadow'
-      : 'routine-mode-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-white';
+      ? 'routine-mode-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md ring-1 ring-white/15'
+      : 'routine-mode-btn rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white transition';
   });
 
   document.querySelectorAll('.routine-shift-btn').forEach(btn => {
     const active = btn.dataset.shift === state.settings.routineShift;
     btn.className = active
-      ? 'routine-shift-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-cyan-600 text-white shadow'
-      : 'routine-shift-btn rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-white';
+      ? 'routine-shift-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-cyan-600 to-teal-500 text-white shadow-md ring-1 ring-white/15'
+      : 'routine-shift-btn rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white transition';
   });
 
   const dayObj = daysOfWeek.find(d => d.key === state.settings.selectedDay) || daysOfWeek[0];
@@ -478,30 +478,30 @@ function renderRoutineView() {
   if (listEl) {
     listEl.innerHTML = '';
     timeline.forEach(item => {
-      let badgeStyle = 'bg-slate-800 text-slate-300 border-slate-700';
-      let cardBorder = 'border-slate-800 bg-slate-900/90';
+      let badgeStyle = 'bg-white/[0.05] text-slate-300 border-white/10';
+      let cardBorder = 'glass-surface border-l-4 border-l-slate-600';
       let typeLabel = 'Break / Rest';
 
       if (item.type === 'study') {
-        badgeStyle = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
-        cardBorder = 'border-amber-500/20 bg-amber-950/10';
-        typeLabel = 'MIST Study';
+        badgeStyle = 'bg-amber-500/10 text-amber-300 border-amber-500/25';
+        cardBorder = 'glass-surface border-l-4 border-l-amber-500 shadow-[0_4px_20px_rgba(245,158,11,0.06)]';
+        typeLabel = 'MIST Study Block';
       } else if (item.type === 'tuition') {
-        badgeStyle = 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
-        cardBorder = 'border-indigo-500/20 bg-indigo-950/15';
+        badgeStyle = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/25';
+        cardBorder = 'glass-surface border-l-4 border-l-indigo-500 shadow-[0_4px_20px_rgba(99,102,241,0.08)]';
         typeLabel = 'Tuition Session';
       }
 
       const row = document.createElement('div');
-      row.className = `flex flex-col gap-2 rounded-2xl border p-3.5 sm:flex-row sm:items-center sm:justify-between ${cardBorder} transition hover:border-slate-700`;
+      row.className = `flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between transition-all hover:translate-x-1 ${cardBorder}`;
       row.innerHTML = `
         <div class="space-y-1">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="font-mono text-xs font-bold text-white bg-slate-950 px-2.5 py-0.5 rounded-md border border-slate-800">${item.time}</span>
-            <span class="rounded-md border px-2 py-0.5 text-[11px] font-semibold ${badgeStyle}">${typeLabel}</span>
+            <span class="font-mono text-xs font-bold text-white bg-black/60 px-2.5 py-1 rounded-lg border border-white/10 shadow-inner">${item.time}</span>
+            <span class="rounded-lg border px-2.5 py-0.5 text-[11px] font-semibold font-sans ${badgeStyle}">${typeLabel}</span>
           </div>
-          <h4 class="text-sm font-bold text-white pt-0.5">${item.title}</h4>
-          <p class="text-xs text-slate-400 leading-relaxed">${item.desc}</p>
+          <h4 class="text-sm font-bold text-white pt-1 font-sans">${item.title}</h4>
+          <p class="text-xs text-slate-400 leading-relaxed font-body">${item.desc}</p>
         </div>
       `;
       listEl.appendChild(row);
@@ -516,19 +516,19 @@ function renderRoutineView() {
 
     trackStudents.forEach((st, idx) => {
       const step = document.createElement('div');
-      step.className = 'flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2 text-xs transition hover:border-indigo-500/40';
+      step.className = 'flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs transition-all hover:border-indigo-500/40 hover:bg-white/[0.04]';
       step.innerHTML = `
-        <div class="flex items-center gap-2.5">
-          <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 font-bold text-indigo-300 border border-indigo-500/30 text-[11px]">
+        <div class="flex items-center gap-3">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-cyan-500 font-extrabold text-white text-xs shadow-md ring-1 ring-white/20">
             ${idx + 1}
           </span>
           <div>
-            <p class="font-semibold text-white">${st.name}</p>
-            <p class="text-[11px] text-slate-400">${st.area}</p>
+            <p class="font-bold text-white font-sans">${st.name}</p>
+            <p class="text-[11px] text-slate-400 font-body">${st.area}</p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="rounded bg-slate-900 px-2 py-0.5 text-[11px] font-medium text-slate-300 border border-slate-800">${st.daysPerWeek}d/wk</span>
+        <div class="flex items-center gap-2">
+          <span class="rounded-lg bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-slate-300 border border-white/10 font-mono">${st.daysPerWeek}d/wk</span>
           <span class="font-mono font-bold text-[11px] ${st.paid ? 'text-emerald-400' : 'text-slate-400'}">${Number(st.fee).toLocaleString()}</span>
         </div>
       `;
@@ -545,8 +545,8 @@ function renderStudyView() {
   document.querySelectorAll('.course-filter-btn').forEach(btn => {
     const active = btn.dataset.course === state.settings.courseFilter;
     btn.className = active
-      ? 'course-filter-btn rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow'
-      : 'course-filter-btn rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white';
+      ? 'course-filter-btn rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-sm ring-1 ring-white/15'
+      : 'course-filter-btn rounded-xl bg-white/[0.05] border border-white/10 px-3 py-1 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.1]';
   });
 
   // Course progress summary cards
@@ -571,20 +571,25 @@ function renderStudyView() {
       });
       const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
+      let gradLine = 'from-rose-500 to-pink-500';
+      if (c.code === 'CE-413') gradLine = 'from-violet-500 to-indigo-500';
+      if (c.code === 'CE-451') gradLine = 'from-cyan-500 to-teal-500';
+
       const card = document.createElement('div');
-      card.className = 'rounded-2xl border border-slate-800 bg-slate-900 p-4 space-y-2.5';
+      card.className = 'glass-surface glass-surface-hover rounded-2xl p-5 space-y-3 border border-white/10 relative overflow-hidden group';
       card.innerHTML = `
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${gradLine}"></div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-white">${c.code}</span>
-          <span class="text-[11px] font-semibold text-slate-400">${c.examDate}</span>
+          <span class="text-xs font-extrabold text-white font-mono bg-white/[0.08] px-2.5 py-0.5 rounded-lg border border-white/10">${c.code}</span>
+          <span class="text-[11px] font-semibold text-slate-400 font-mono">${c.examDate}</span>
         </div>
-        <p class="text-xs text-slate-300 truncate font-medium">${c.name}</p>
-        <div class="h-2 w-full overflow-hidden rounded-full bg-slate-950">
-          <div class="progress-bar-fill h-full bg-indigo-500" style="width: ${pct}%"></div>
+        <p class="text-xs text-slate-200 truncate font-semibold font-sans">${c.name}</p>
+        <div class="h-2 w-full overflow-hidden rounded-full bg-black/50 p-[1px]">
+          <div class="progress-bar-fill h-full bg-gradient-to-r ${gradLine} rounded-full" style="width: ${pct}%"></div>
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 font-body">
           <span>${doneTasks}/${totalTasks} blocks done</span>
-          <span class="font-bold text-indigo-300">${pct}%</span>
+          <span class="font-bold text-white font-mono">${pct}%</span>
         </div>
       `;
       summaryContainer.appendChild(card);
@@ -599,30 +604,30 @@ function renderStudyView() {
 
     filteredDays.forEach(day => {
       const card = document.createElement('div');
-      card.className = 'rounded-2xl border border-slate-800 bg-slate-900 p-4 space-y-3';
+      card.className = 'glass-surface rounded-2xl p-5 space-y-3.5 border border-white/10';
 
-      let badgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
-      if (day.course === 'CE-411') badgeColor = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
-      else if (day.course === 'CE-413') badgeColor = 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
-      else if (day.course === 'CE-451') badgeColor = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+      let badgeColor = 'bg-white/[0.06] text-slate-300 border-white/10';
+      if (day.course === 'CE-411') badgeColor = 'bg-rose-500/15 text-rose-300 border-rose-500/25';
+      else if (day.course === 'CE-413') badgeColor = 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25';
+      else if (day.course === 'CE-451') badgeColor = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/25';
 
       let tasksHtml = '';
       (day.tasks || []).forEach(task => {
         tasksHtml += `
-          <label class="flex items-start gap-3 rounded-xl border border-slate-800/80 bg-slate-950/60 p-2.5 cursor-pointer hover:border-slate-700 transition">
-            <input type="checkbox" data-day="${day.id}" data-task="${task.id}" ${task.done ? 'checked' : ''} class="study-task-checkbox mt-0.5 h-4 w-4 rounded border-slate-600 bg-slate-900 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-            <span class="text-xs leading-relaxed ${task.done ? 'line-through text-slate-500' : 'text-slate-200'}">${task.text}</span>
+          <label class="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-black/40 p-3 cursor-pointer hover:border-white/20 hover:bg-white/[0.03] transition-all">
+            <input type="checkbox" data-day="${day.id}" data-task="${task.id}" ${task.done ? 'checked' : ''} class="study-task-checkbox mt-0.5 h-4 w-4 rounded border-white/20 bg-black/60 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+            <span class="text-xs leading-relaxed font-body ${task.done ? 'line-through text-slate-500' : 'text-slate-200'}">${task.text}</span>
           </label>
         `;
       });
 
       card.innerHTML = `
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
           <div>
-            <h4 class="text-sm font-bold text-white">${day.date}</h4>
-            <p class="text-xs text-slate-400">${day.course} — ${day.courseTitle}</p>
+            <h4 class="text-sm font-bold text-white font-sans">${day.date}</h4>
+            <p class="text-xs text-slate-400 font-body">${day.course} — ${day.courseTitle}</p>
           </div>
-          <span class="rounded-lg border px-2.5 py-0.5 text-[11px] font-bold ${badgeColor}">${day.tag}</span>
+          <span class="rounded-lg border px-3 py-1 text-[11px] font-bold font-mono ${badgeColor}">${day.tag}</span>
         </div>
         <div class="space-y-2">
           ${tasksHtml}
@@ -663,16 +668,13 @@ function renderTuitionsView() {
 
   // Filter Tuitions
   const filtered = state.tuitions.filter(t => {
-    // Search filter
     const q = state.tuitionFilter.search.toLowerCase();
     if (q && !t.name.toLowerCase().includes(q) && !t.area.toLowerCase().includes(q)) {
       return false;
     }
-    // Track filter
     if (state.tuitionFilter.track !== 'ALL' && t.track !== state.tuitionFilter.track) {
       return false;
     }
-    // Paid filter
     if (state.tuitionFilter.paid === 'paid' && !t.paid) return false;
     if (state.tuitionFilter.paid === 'unpaid' && t.paid) return false;
     return true;
@@ -680,9 +682,9 @@ function renderTuitionsView() {
 
   if (filtered.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full rounded-2xl border border-dashed border-slate-800 p-8 text-center text-slate-400 space-y-2">
-        <p class="text-sm font-bold text-white">No students match your filter.</p>
-        <p class="text-xs">Try clearing your search query or change the track filter.</p>
+      <div class="col-span-full rounded-2xl border border-dashed border-white/10 p-10 text-center text-slate-400 space-y-2 glass-surface">
+        <p class="text-sm font-bold text-white font-sans">No students match your filter.</p>
+        <p class="text-xs font-body">Try clearing your search query or reset filters.</p>
       </div>
     `;
     return;
@@ -694,91 +696,101 @@ function renderTuitionsView() {
       ? 'Track A: Sun, Tue, Thu, Fri (4d)'
       : 'Track B: Sat, Mon, Wed (3d)';
 
+    const initial = (t.name || 'S').trim().charAt(0).toUpperCase();
+    const avatarGrad = t.track === 'A'
+      ? 'from-violet-600 via-indigo-600 to-cyan-500'
+      : 'from-cyan-600 via-teal-500 to-emerald-500';
+
     const card = document.createElement('div');
-    card.className = 'tuition-card flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900 p-4 space-y-4 transition hover:border-slate-700';
+    card.className = 'tuition-card flex flex-col justify-between rounded-2xl glass-surface glass-surface-hover p-5 space-y-4 border border-white/10 group';
     card.setAttribute('draggable', 'true');
     card.setAttribute('data-id', t.id);
 
     card.innerHTML = `
-      <div class="space-y-2">
-        <!-- Header: Drag Handle, Name, Order, Fee -->
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-start gap-2.5">
+      <div class="space-y-3">
+        <!-- Header: Avatar, Name, Order, Fee -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <!-- Initial Avatar Badge -->
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr ${avatarGrad} font-black text-white text-sm shadow-md ring-1 ring-white/20">
+              ${initial}
+            </div>
+
             <!-- Drag Handle & Reorder Buttons -->
-            <div class="flex flex-col items-center justify-center gap-1 pt-0.5">
+            <div class="flex flex-col items-center justify-center gap-0.5 pt-0.5">
               <span class="cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-300" title="Drag to reorder">
-                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M7 2a2 2 0 10.001 4.001A2 2 0 007 2zm0 6a2 2 0 10.001 4.001A2 2 0 007 8zm0 6a2 2 0 10.001 4.001A2 2 0 007 14zm6-12a2 2 0 10.001 4.001A2 2 0 0013 2zm0 6a2 2 0 10.001 4.001A2 2 0 0013 8zm0 6a2 2 0 10.001 4.001A2 2 0 0013 14z" />
                 </svg>
               </span>
-              <div class="flex flex-col gap-0.5">
-                <button type="button" data-action="move-up" data-id="${t.id}" class="text-[10px] text-slate-500 hover:text-indigo-400 p-0.5" title="Move Up">▲</button>
-                <button type="button" data-action="move-down" data-id="${t.id}" class="text-[10px] text-slate-500 hover:text-indigo-400 p-0.5" title="Move Down">▼</button>
+              <div class="flex flex-col">
+                <button type="button" data-action="move-up" data-id="${t.id}" class="text-[9px] text-slate-500 hover:text-indigo-400 leading-none" title="Move Up">▲</button>
+                <button type="button" data-action="move-down" data-id="${t.id}" class="text-[9px] text-slate-500 hover:text-indigo-400 leading-none" title="Move Down">▼</button>
               </div>
             </div>
 
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-sm font-bold text-white cursor-pointer hover:text-indigo-300 transition" data-action="inline-edit" data-id="${t.id}">
+                <h3 class="text-sm font-extrabold text-white cursor-pointer hover:text-indigo-300 transition-colors font-sans" data-action="inline-edit" data-id="${t.id}">
                   ${t.name}
                 </h3>
-                <span class="text-[10px] font-mono rounded bg-slate-950 px-1.5 py-0.5 text-slate-400 border border-slate-800">#${t.slotOrder || index + 1}</span>
+                <span class="text-[10px] font-mono rounded-md bg-black/60 px-1.5 py-0.5 text-slate-400 border border-white/10">#${t.slotOrder || index + 1}</span>
               </div>
-              <p class="text-xs text-indigo-300 font-medium">${t.area}</p>
+              <p class="text-xs text-indigo-300 font-medium font-body">${t.area}</p>
             </div>
           </div>
 
           <div class="flex flex-col items-end gap-1">
-            <span class="rounded-lg bg-slate-950 px-2.5 py-1 text-xs font-extrabold text-emerald-400 border border-slate-800 font-mono">
-              ${Number(t.fee || 0).toLocaleString()} BDT
+            <span class="rounded-xl bg-black/60 px-3 py-1.5 text-xs font-black text-emerald-400 border border-emerald-500/25 font-mono shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+              ${Number(t.fee || 0).toLocaleString()} <span class="text-[10px] text-slate-400 font-sans">BDT</span>
             </span>
           </div>
         </div>
 
         <!-- Note snippet -->
-        <p class="text-xs text-slate-400 leading-relaxed italic cursor-pointer hover:text-slate-200 transition" data-action="edit" data-id="${t.id}">
-          ${t.note || 'No notes added. Click to add.'}
+        <p class="text-xs text-slate-400 leading-relaxed italic cursor-pointer hover:text-slate-200 transition-colors font-body bg-black/20 p-2 rounded-xl border border-white/[0.04]" data-action="edit" data-id="${t.id}">
+          ${t.note || 'No notes added. Click to edit notes.'}
         </p>
 
         <!-- Track & Target Badges -->
-        <div class="flex flex-wrap items-center gap-2 pt-1">
-          <span class="rounded-md bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-300">${trackBadge}</span>
-          <span class="rounded-md bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-300">Target: ${t.daysPerWeek} days/wk</span>
+        <div class="flex flex-wrap items-center gap-2 pt-0.5">
+          <span class="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300 font-sans">${trackBadge}</span>
+          <span class="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300 font-mono">Target: ${t.daysPerWeek}d/wk</span>
         </div>
       </div>
 
       <!-- Weekly Progress & Actions -->
-      <div class="space-y-3 pt-2 border-t border-slate-800/80">
-        <div class="space-y-1">
-          <div class="flex items-center justify-between text-xs">
+      <div class="space-y-3 pt-3 border-t border-white/[0.08]">
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-xs font-body">
             <span class="text-slate-400">Weekly Progress</span>
-            <span class="font-bold text-white">${t.daysDone || 0} / ${t.daysPerWeek} days (${pct}%)</span>
+            <span class="font-bold text-white font-mono">${t.daysDone || 0} / ${t.daysPerWeek} days (${pct}%)</span>
           </div>
-          <div class="h-2 w-full overflow-hidden rounded-full bg-slate-950">
-            <div class="progress-bar-fill h-full bg-indigo-500" style="width: ${pct}%"></div>
+          <div class="h-2 w-full overflow-hidden rounded-full bg-black/50 p-[1px]">
+            <div class="progress-bar-fill h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full shadow-[0_0_8px_#6366f1]" style="width: ${pct}%"></div>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
           <!-- Counter Buttons -->
           <div class="flex items-center gap-1.5">
-            <button type="button" data-action="dec" data-id="${t.id}" class="tuition-action-btn rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-200 hover:bg-slate-700 active:scale-95 transition">- Day</button>
-            <button type="button" data-action="inc" data-id="${t.id}" class="tuition-action-btn rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-indigo-500 active:scale-95 transition shadow-sm">+ Day</button>
+            <button type="button" data-action="dec" data-id="${t.id}" class="tuition-action-btn rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.12] px-3 py-1.5 text-xs font-bold text-slate-200 hover:text-white active:scale-95 transition-all">- Day</button>
+            <button type="button" data-action="inc" data-id="${t.id}" class="tuition-action-btn rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 px-3.5 py-1.5 text-xs font-bold text-white active:scale-95 transition-all shadow-md shadow-indigo-600/30 ring-1 ring-white/20">+ Day</button>
           </div>
 
           <!-- Paid, Edit, Delete Controls -->
           <div class="flex items-center gap-1.5">
-            <button type="button" data-action="paid" data-id="${t.id}" class="tuition-action-btn rounded-lg px-2.5 py-1 text-xs font-semibold border transition ${
+            <button type="button" data-action="paid" data-id="${t.id}" class="tuition-action-btn rounded-xl px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 ${
               t.paid
-                ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300 font-bold'
-                : 'border-slate-700 bg-slate-800 text-slate-400 hover:text-white'
+                ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white hover:border-white/20'
             }">
               ${t.paid ? '✓ Fee Paid' : 'Mark Paid'}
             </button>
-            <button type="button" data-action="edit" data-id="${t.id}" class="tuition-action-btn rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition">
+            <button type="button" data-action="edit" data-id="${t.id}" class="tuition-action-btn rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95">
               Edit
             </button>
-            <button type="button" data-action="delete" data-id="${t.id}" class="tuition-action-btn rounded-lg border border-rose-900/50 bg-rose-950/20 px-2 py-1 text-xs font-medium text-rose-400 hover:bg-rose-900/40 transition" title="Delete Student">
+            <button type="button" data-action="delete" data-id="${t.id}" class="tuition-action-btn rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 px-2.5 py-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 transition-all active:scale-95" title="Delete Student">
               ✕
             </button>
           </div>
@@ -1015,9 +1027,9 @@ function renderHistoryView() {
 
   if (state.historyLogs.length === 0) {
     container.innerHTML = `
-      <div class="rounded-2xl border border-dashed border-slate-800 p-8 text-center text-slate-400 space-y-2">
-        <p class="text-sm font-bold text-white">No weekly archives found yet.</p>
-        <p class="text-xs">Click "Reset Week &amp; Archive" on the Tuitions tab at the end of a week to save your session log.</p>
+      <div class="rounded-2xl border border-dashed border-white/10 p-8 text-center text-slate-400 space-y-2 glass-surface">
+        <p class="text-sm font-bold text-white font-sans">No weekly archives found yet.</p>
+        <p class="text-xs font-body">Click "Reset Week &amp; Archive" on the Tuitions tab at the end of a week to save your session log.</p>
       </div>
     `;
     return;
@@ -1025,18 +1037,18 @@ function renderHistoryView() {
 
   state.historyLogs.forEach(entry => {
     const card = document.createElement('div');
-    card.className = 'rounded-2xl border border-slate-800 bg-slate-900 p-4 space-y-3';
+    card.className = 'rounded-2xl border border-white/10 glass-surface glass-surface-hover p-5 space-y-3.5';
 
     let summaryItems = '';
     (entry.tuitionsSummary || []).forEach(st => {
       summaryItems += `
-        <div class="flex items-center justify-between py-1 border-b border-slate-800/40 text-xs">
+        <div class="flex items-center justify-between py-1.5 border-b border-white/[0.06] text-xs">
           <div>
-            <span class="font-medium text-white">${st.name}</span>
-            <span class="text-[11px] text-slate-500">(${st.area})</span>
+            <span class="font-medium text-white font-sans">${st.name}</span>
+            <span class="text-[11px] text-slate-400 font-body">(${st.area})</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-slate-400">${st.daysDone}/${st.daysPerWeek} sessions</span>
+            <span class="text-slate-400 font-mono text-[11px]">${st.daysDone}/${st.daysPerWeek} sessions</span>
             <span class="font-mono font-bold ${st.paid ? 'text-emerald-400' : 'text-slate-400'}">${Number(st.fee).toLocaleString()} BDT</span>
           </div>
         </div>
@@ -1044,21 +1056,21 @@ function renderHistoryView() {
     });
 
     card.innerHTML = `
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
         <div>
-          <h4 class="text-sm font-bold text-white">Week: ${entry.weekStart} – ${entry.weekEnd}</h4>
-          <p class="text-[11px] text-slate-400">Archived on ${new Date(entry.archivedAt).toLocaleString()}</p>
+          <h4 class="text-sm font-bold text-white font-sans">Week: ${entry.weekStart} – ${entry.weekEnd}</h4>
+          <p class="text-[11px] text-slate-400 font-body">Archived on ${new Date(entry.archivedAt).toLocaleString()}</p>
         </div>
         <div class="flex items-center gap-2">
-          <span class="rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-xs font-extrabold text-emerald-300">
+          <span class="rounded-lg bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-xs font-bold font-mono text-emerald-300">
             Collected: ${Number(entry.collectedFee || 0).toLocaleString()} BDT
           </span>
-          <span class="rounded-lg bg-indigo-500/15 border border-indigo-500/30 px-2.5 py-1 text-xs font-bold text-indigo-300">
+          <span class="rounded-lg bg-indigo-500/10 border border-indigo-500/25 px-2.5 py-1 text-xs font-bold font-mono text-indigo-300">
             ${entry.totalSessionsDone || 0} / ${entry.targetSessions || 35} Sessions
           </span>
         </div>
       </div>
-      <div class="space-y-1 pt-1">
+      <div class="space-y-1 pt-1 font-body">
         ${summaryItems}
       </div>
     `;
@@ -1167,23 +1179,23 @@ export function showToast(message, type = 'info', duration = 3000) {
   if (!container) return;
 
   const toast = document.createElement('div');
-  let borderStyle = 'border-slate-700 bg-slate-900 text-slate-100';
+  let borderStyle = 'border-white/10 bg-black/80 text-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.6)]';
   let icon = 'ℹ️';
 
   if (type === 'success') {
-    borderStyle = 'border-emerald-500/50 bg-slate-900 text-emerald-300 shadow-emerald-950/40';
+    borderStyle = 'border-emerald-500/30 bg-[#061510]/90 text-emerald-300 shadow-[0_10px_30px_rgba(16,185,129,0.15)]';
     icon = '✓';
   } else if (type === 'error') {
-    borderStyle = 'border-rose-500/50 bg-slate-900 text-rose-300 shadow-rose-950/40';
+    borderStyle = 'border-rose-500/30 bg-[#16080b]/90 text-rose-300 shadow-[0_10px_30px_rgba(244,63,94,0.15)]';
     icon = '✕';
   } else if (type === 'warning') {
-    borderStyle = 'border-amber-500/50 bg-slate-900 text-amber-300 shadow-amber-950/40';
+    borderStyle = 'border-amber-500/30 bg-[#181106]/90 text-amber-300 shadow-[0_10px_30px_rgba(245,158,11,0.15)]';
     icon = '⚠️';
   }
 
-  toast.className = `pointer-events-auto flex items-center gap-2.5 rounded-2xl border p-3 text-xs font-semibold shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 ${borderStyle}`;
+  toast.className = `pointer-events-auto flex items-center gap-3 rounded-2xl border p-3.5 text-xs font-semibold shadow-2xl backdrop-blur-xl transition-all duration-300 transform translate-y-2 opacity-0 ring-1 ring-white/10 font-sans ${borderStyle}`;
   toast.innerHTML = `
-    <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-800 text-[11px] font-bold">${icon}</span>
+    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-white/10 text-xs font-bold font-mono">${icon}</span>
     <span class="flex-1">${message}</span>
   `;
 
@@ -1547,13 +1559,13 @@ function initAuthUI() {
   function setAuthMode(signUp) {
     isSignUpMode = signUp;
     if (isSignUpMode) {
-      authTabSignUp.className = 'flex-1 py-2 rounded-lg text-center transition-all bg-indigo-600 text-white shadow';
-      authTabSignIn.className = 'flex-1 py-2 rounded-lg text-center transition-all text-slate-400 hover:text-white';
+      authTabSignUp.className = 'flex-1 py-2 rounded-xl text-center text-xs font-bold transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/25 ring-1 ring-white/20';
+      authTabSignIn.className = 'flex-1 py-2 rounded-xl text-center text-xs font-semibold transition-all text-slate-400 hover:text-white';
       authNameField.classList.remove('hidden');
       authSubmitText.textContent = 'Create Account';
     } else {
-      authTabSignIn.className = 'flex-1 py-2 rounded-lg text-center transition-all bg-indigo-600 text-white shadow';
-      authTabSignUp.className = 'flex-1 py-2 rounded-lg text-center transition-all text-slate-400 hover:text-white';
+      authTabSignIn.className = 'flex-1 py-2 rounded-xl text-center text-xs font-bold transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/25 ring-1 ring-white/20';
+      authTabSignUp.className = 'flex-1 py-2 rounded-xl text-center text-xs font-semibold transition-all text-slate-400 hover:text-white';
       authNameField.classList.add('hidden');
       authSubmitText.textContent = 'Sign In';
     }
