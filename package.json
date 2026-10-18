@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "serve": "npx -y serve .",
+    "push": "git add . && git commit -m \"Update app\" && git push origin main",
     "deploy:firebase": "npx -y firebase-tools deploy"
   },
   "keywords": ["routine", "planner", "tuition", "mist", "firebase", "pwa"],
