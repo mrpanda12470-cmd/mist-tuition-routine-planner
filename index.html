@@ -510,6 +510,11 @@
               </span>
             </div>
 
+            <!-- Active Day Adjustments Banner (Shows when session overrides exist on selected day) -->
+            <div id="dayAdjustmentsBanner" class="hidden rounded-2xl glass-surface border border-amber-500/30 bg-amber-500/[0.06] p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+              <!-- Populated by JS -->
+            </div>
+
             <!-- Timeline List -->
             <div class="space-y-3" id="dailyTimelineList">
               <!-- Populated by JS -->
@@ -941,6 +946,188 @@
           <button type="submit" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/30">Add Milestone</button>
         </div>
       </form>
+    </div>
+  <!-- Modal 5: Session Schedule Adjuster Modal (Shift, Cancel, Online) -->
+  <div id="sessionAdjustModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-lg rounded-3xl glass-surface p-6 sm:p-7 shadow-2xl space-y-5 border border-white/10">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500/20 via-violet-500/20 to-cyan-500/20 text-amber-300 border border-amber-500/30 shadow-inner">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white font-sans">Adjust Session Schedule</h3>
+            <p class="text-xs text-slate-400 font-body">
+              <span id="adjustModalStudentName" class="font-bold text-white">Student Name</span> • <span id="adjustModalDayName" class="text-indigo-300 font-semibold">Today</span>
+            </p>
+          </div>
+        </div>
+        <button id="btnCloseAdjustModal" type="button" class="rounded-xl p-2 text-slate-400 hover:text-white hover:bg-white/[0.08] transition">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Hidden inputs -->
+      <input type="hidden" id="adjustTuitionId" />
+      <input type="hidden" id="adjustOriginalDay" />
+      <input type="hidden" id="adjustCurrentStatus" value="normal" />
+
+      <!-- Status Option Selector Cards -->
+      <div class="space-y-1.5">
+        <label class="text-[11px] font-semibold text-slate-300 font-body">Select Today's Session Mode</label>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <!-- 1. Normal In-Person -->
+          <button type="button" data-status="normal" class="adjust-status-choice-btn rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all hover:bg-white/[0.08] hover:border-white/20 active:scale-95 space-y-1">
+            <span class="text-lg">🚗</span>
+            <p class="text-xs font-bold text-white font-sans">In-Person</p>
+            <p class="text-[10px] text-slate-400 leading-tight">Home transit</p>
+          </button>
+          
+          <!-- 2. Online Class -->
+          <button type="button" data-status="online" class="adjust-status-choice-btn rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all hover:bg-white/[0.08] hover:border-cyan-500/40 active:scale-95 space-y-1">
+            <span class="text-lg">💻</span>
+            <p class="text-xs font-bold text-white font-sans">Online</p>
+            <p class="text-[10px] text-cyan-300 leading-tight">Meet / Zoom</p>
+          </button>
+
+          <!-- 3. Shift to another day -->
+          <button type="button" data-status="shifted" class="adjust-status-choice-btn rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all hover:bg-white/[0.08] hover:border-violet-500/40 active:scale-95 space-y-1">
+            <span class="text-lg">⏩</span>
+            <p class="text-xs font-bold text-white font-sans">Shift Day</p>
+            <p class="text-[10px] text-violet-300 leading-tight">Reschedule</p>
+          </button>
+
+          <!-- 4. Cancel Today -->
+          <button type="button" data-status="cancelled" class="adjust-status-choice-btn rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all hover:bg-white/[0.08] hover:border-rose-500/40 active:scale-95 space-y-1">
+            <span class="text-lg">❌</span>
+            <p class="text-xs font-bold text-white font-sans">Cancel</p>
+            <p class="text-[10px] text-rose-300 leading-tight">Off today</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contextual Inputs Panel -->
+      <div id="adjustContextualPanel" class="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3.5">
+        
+        <!-- Online Section (Shown when status == 'online') -->
+        <div id="adjustOnlineFields" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5 font-sans">
+              <span>💻</span> Online Class Setup
+            </span>
+            <span class="text-[11px] text-slate-400">Zero travel required</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-semibold text-slate-300 font-body">Platform</label>
+              <select id="adjustOnlinePlatform" class="w-full mt-1 rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none">
+                <option value="Google Meet">Google Meet</option>
+                <option value="Zoom">Zoom Meeting</option>
+                <option value="WhatsApp Video">WhatsApp Video</option>
+                <option value="Discord">Discord / Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-slate-300 font-body">Quick Link</label>
+              <div class="flex gap-1.5 mt-1">
+                <input type="text" id="adjustOnlineLink" placeholder="meet.google.com/abc-xyz" class="w-full rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none font-mono" />
+                <button type="button" id="btnGenerateMeetLink" class="shrink-0 rounded-xl bg-cyan-500/15 border border-cyan-500/30 px-2.5 py-2 text-[11px] font-bold text-cyan-300 hover:bg-cyan-500/25 transition" title="Paste new Google Meet link">
+                  New Meet
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Session Note / Topic</label>
+            <input type="text" id="adjustOnlineNote" placeholder="e.g. Math Chapter 7 via iPad screen share" class="w-full mt-1 rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Shift / Reschedule Section (Shown when status == 'shifted') -->
+        <div id="adjustShiftFields" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-violet-300 flex items-center gap-1.5 font-sans">
+              <span>⏩</span> Reschedule to Another Day
+            </span>
+            <span class="text-[11px] text-slate-400">Moves slot to target day</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-semibold text-slate-300 font-body">Shift to Day</label>
+              <select id="adjustTargetDay" class="w-full mt-1 rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white focus:border-violet-500 focus:outline-none">
+                <option value="Sun">Sunday</option>
+                <option value="Mon">Monday</option>
+                <option value="Tue">Tuesday</option>
+                <option value="Wed">Wednesday</option>
+                <option value="Thu">Thursday</option>
+                <option value="Fri">Friday</option>
+                <option value="Sat">Saturday</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-slate-300 font-body">New Time / Slot</label>
+              <input type="text" id="adjustShiftTime" placeholder="e.g. 04:00 PM or 08:30 PM" class="w-full mt-1 rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-violet-500 focus:outline-none font-mono" />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Reason / Note for Shift</label>
+            <input type="text" id="adjustShiftNote" placeholder="e.g. Student has school exam on Tuesday; makeup on Wednesday" class="w-full mt-1 rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-violet-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Cancelled Section (Shown when status == 'cancelled') -->
+        <div id="adjustCancelFields" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-300 flex items-center gap-1.5 font-sans">
+              <span>❌</span> Cancel Today's Session
+            </span>
+            <span class="text-[11px] text-slate-400">Frees up 1.25h for study</span>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-300 font-body">Cancellation Reason</label>
+            <input type="text" id="adjustCancelReason" placeholder="e.g. Student sick / Heavy rain / Prep for CE-411" class="w-full mt-1 rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-rose-500 focus:outline-none" />
+          </div>
+
+          <p class="text-[11px] text-slate-400 leading-relaxed font-body">
+            💡 This session will be skipped in today's Manikdi transit loop and marked as cancelled. The student's weekly count won't increment.
+          </p>
+        </div>
+
+        <!-- Normal In-Person Notice -->
+        <div id="adjustNormalNotice" class="text-xs text-slate-400 leading-relaxed space-y-1 font-body">
+          <p class="font-semibold text-white">Standard Home Tuition (In-Person)</p>
+          <p>The student will be visited at their scheduled physical slot in Manikdi / Nirjor according to the regular transit loop.</p>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-white/[0.08]">
+        <button id="btnResetAdjustment" type="button" class="text-xs font-semibold text-rose-400 hover:text-rose-300 transition">
+          Revert to Default
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button id="btnCancelAdjustModal" type="button" class="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white transition active:scale-95">
+            Cancel
+          </button>
+          <button id="btnSaveAdjustment" type="button" class="rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 ring-1 ring-white/20 transition active:scale-95">
+            Save Adjustment ✓
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 

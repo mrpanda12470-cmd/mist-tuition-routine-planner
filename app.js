@@ -24,6 +24,7 @@ import {
   subscribeTuitions,
   subscribeStudyDays,
   subscribeHistory,
+  subscribeAdjustments,
   saveUserSettings,
   saveUserProfile,
   addTuition,
@@ -33,6 +34,9 @@ import {
   updateStudyTask,
   addStudyDay,
   resetWeeklyTuitions,
+  saveSessionAdjustment,
+  deleteSessionAdjustment,
+  clearDayAdjustments,
   exportAllUserData,
   onSyncStatus
 } from "./db.js";
@@ -63,6 +67,7 @@ const state = {
   tuitions: [],
   studyDays: [],
   historyLogs: [],
+  adjustments: [],
   tuitionFilter: {
     search: '',
     track: 'ALL',
@@ -77,7 +82,8 @@ const state = {
     label: 'Exam Deep Study (50m)'
   },
   draggedTuitionId: null,
-  pendingDeleteId: null
+  pendingDeleteId: null,
+  adjustingSession: null
 };
 
 // Subscriptions teardown
@@ -85,6 +91,7 @@ let unsubSettings = null;
 let unsubTuitions = null;
 let unsubStudyDays = null;
 let unsubHistory = null;
+let unsubAdjustments = null;
 
 // ==============================================================
 // 1. INITIALIZATION & AUTH STATE
@@ -120,6 +127,7 @@ async function handleAuthStateChange(user) {
   if (unsubTuitions) unsubTuitions();
   if (unsubStudyDays) unsubStudyDays();
   if (unsubHistory) unsubHistory();
+  if (unsubAdjustments) unsubAdjustments();
 
   if (!user) {
     // Show login screen
@@ -201,6 +209,13 @@ function subscribeToUserData(uid) {
   unsubHistory = subscribeHistory(uid, (historyItems) => {
     state.historyLogs = historyItems;
     renderHistoryView();
+  });
+
+  // 5. Session Adjustments (Shift, Cancel, Online)
+  unsubAdjustments = subscribeAdjustments(uid, (adjList) => {
+    state.adjustments = adjList || [];
+    renderRoutineView();
+    renderTuitionsView();
   });
 }
 
@@ -369,68 +384,138 @@ function getTrackStudents(trackKey) {
     .sort((a, b) => (Number(a.slotOrder) || 1) - (Number(b.slotOrder) || 1));
 }
 
+function createTuitionBlock(time, idx, students, dayKey, durationText) {
+  const student = students[idx] || null;
+  const sName = student ? student.name : `Tuition Slot #${idx + 1}`;
+  const sArea = student ? student.area : 'Manikdi';
+  const tuitionId = student ? student.id : null;
+  const baseNote = student && student.note ? student.note : 'Scheduled session';
+
+  // Find adjustment on dayKey
+  const adj = (tuitionId && state.adjustments)
+    ? state.adjustments.find(a => a.tuitionId === tuitionId && a.originalDay === dayKey)
+    : null;
+
+  const block = {
+    time,
+    type: 'tuition',
+    slotIndex: idx,
+    student,
+    tuitionId,
+    dayKey,
+    title: `Tuition ${idx + 1} (${durationText}): ${sName} — ${sArea}`,
+    desc: baseNote,
+    status: adj ? adj.status : 'normal',
+    adjustment: adj
+  };
+
+  if (adj) {
+    if (adj.status === 'online') {
+      block.isOnline = true;
+      block.onlinePlatform = adj.onlinePlatform || 'Google Meet';
+      block.onlineLink = adj.onlineLink || '';
+      block.title = `💻 Online Tuition ${idx + 1}: ${sName} (${adj.onlinePlatform || 'Meet'})`;
+      block.desc = adj.reason || `Online session via ${adj.onlinePlatform || 'Google Meet'}. Zero transit required!`;
+    } else if (adj.status === 'shifted') {
+      block.isShifted = true;
+      block.targetDay = adj.targetDay || 'Another Day';
+      block.shiftTime = adj.shiftTime || 'Adjusted Slot';
+      block.title = `⏩ Shifted: ${sName} (Moved to ${adj.targetDay})`;
+      block.desc = adj.reason ? `Shifted to ${adj.targetDay} (${adj.shiftTime || 'Makeup'}): ${adj.reason}` : `Session shifted to ${adj.targetDay}. Slot freed for study / rest!`;
+    } else if (adj.status === 'cancelled') {
+      block.isCancelled = true;
+      block.cancelReason = adj.reason || 'Session off today';
+      block.title = `❌ Cancelled: ${sName} (Off Today)`;
+      block.desc = `Cancelled: ${adj.reason || 'Session off today'}. Free time for self-study / recharge!`;
+    }
+  }
+
+  return block;
+}
+
 function buildDailyScheduleBlocks(dayObj) {
   const students = getTrackStudents(dayObj.track);
-  const s = idx => students[idx] ? `${students[idx].name} — ${students[idx].area}` : `Tuition Slot #${idx + 1}`;
-  const sNote = idx => students[idx] && students[idx].note ? students[idx].note : 'Scheduled session';
-
   const isEve = state.settings.routineMode === 'eve';
   const isPost = state.settings.routineMode === 'post';
+  const dur = isEve ? '1.1h' : (isPost ? '1.4h' : '1.25h');
+  const dKey = dayObj.key;
+
+  let blocks = [];
 
   if (state.settings.routineShift === 'afternoon') {
     if (isEve) {
-      return [
+      blocks = [
         { time: '07:00 – 10:30 AM', type: 'study', title: 'Exam Eve Deep Revision Block 1 (3.5h)', desc: 'High-yield MIST numericals, design flowcharts & formula walk-through' },
         { time: '10:30 – 11:00 AM', type: 'break', title: 'Breakfast & Short Recharge', desc: 'Step away from desk, hydrate' },
         { time: '11:00 AM – 01:00 PM', type: 'study', title: 'Past Paper & Code Check (2.0h)', desc: 'Review AISC / BNBC / AASHTO tables, calculator setup & short theory' },
         { time: '01:00 – 02:15 PM', type: 'break', title: 'Prayer, Lunch & Power Nap', desc: 'Mandatory rest before afternoon tuitions' },
-        { time: '02:15 – 03:20 PM', type: 'tuition', title: `Tuition 1 (1.1h): ${s(0)}`, desc: sNote(0) },
-        { time: '03:30 – 04:35 PM', type: 'tuition', title: `Tuition 2 (1.1h): ${s(1)}`, desc: sNote(1) },
-        { time: '04:50 – 05:55 PM', type: 'tuition', title: `Tuition 3 (1.1h): ${s(2)}`, desc: sNote(2) },
-        { time: '06:10 – 07:15 PM', type: 'tuition', title: `Tuition 4 (1.1h): ${s(3)}`, desc: sNote(3) },
-        { time: '07:25 – 08:30 PM', type: 'tuition', title: `Tuition 5 (1.1h): ${s(4)}`, desc: sNote(4) },
+        createTuitionBlock('02:15 – 03:20 PM', 0, students, dKey, dur),
+        createTuitionBlock('03:30 – 04:35 PM', 1, students, dKey, dur),
+        createTuitionBlock('04:50 – 05:55 PM', 2, students, dKey, dur),
+        createTuitionBlock('06:10 – 07:15 PM', 3, students, dKey, dur),
+        createTuitionBlock('07:25 – 08:30 PM', 4, students, dKey, dur),
         { time: '08:45 – 10:45 PM', type: 'study', title: 'Final Exam-Eve Formula Recap (2.0h)', desc: 'Dinner + light review of 1-page formula sheet; sleep by 11:00 PM sharp!' }
       ];
     } else if (isPost) {
-      return [
+      blocks = [
         { time: '08:30 – 11:00 AM', type: 'study', title: 'Personal Skill / Thesis / Software Block (2.5h)', desc: 'Post-final break: ETABS/SAFE, Thesis, GRE/IELTS, or coding' },
         { time: '11:00 AM – 02:15 PM', type: 'break', title: 'Gym, Prayer, Lunch & Full Rest', desc: 'Relaxed vacation pace at home in Manikdi' },
-        { time: '02:15 – 03:40 PM', type: 'tuition', title: `Tuition 1 (1.4h): ${s(0)}`, desc: sNote(0) },
-        { time: '03:50 – 05:15 PM', type: 'tuition', title: `Tuition 2 (1.4h): ${s(1)}`, desc: sNote(1) },
-        { time: '05:30 – 06:55 PM', type: 'tuition', title: `Tuition 3 (1.4h): ${s(2)}`, desc: sNote(2) },
-        { time: '07:10 – 08:35 PM', type: 'tuition', title: `Tuition 4 (1.4h): ${s(3)}`, desc: sNote(3) },
-        { time: '08:45 – 10:10 PM', type: 'tuition', title: `Tuition 5 (1.4h): ${s(4)}`, desc: sNote(4) },
+        createTuitionBlock('02:15 – 03:40 PM', 0, students, dKey, dur),
+        createTuitionBlock('03:50 – 05:15 PM', 1, students, dKey, dur),
+        createTuitionBlock('05:30 – 06:55 PM', 2, students, dKey, dur),
+        createTuitionBlock('07:10 – 08:35 PM', 3, students, dKey, dur),
+        createTuitionBlock('08:45 – 10:10 PM', 4, students, dKey, dur),
         { time: '10:15 PM – 12:00 AM', type: 'break', title: 'Dinner & Free Evening', desc: 'Zero exam stress until January!' }
       ];
     } else {
       // Standard Exam Prep Mode (1.25h)
-      return [
+      blocks = [
         { time: '07:30 – 10:30 AM', type: 'study', title: 'Morning Deep Study Block 1 (3.0h)', desc: 'Peak focus for heavy CE-411 / CE-413 / CE-451 derivations & numericals at home in Manikdi' },
         { time: '10:30 – 11:00 AM', type: 'break', title: 'Breakfast & Coffee Break', desc: '30m mental reset' },
         { time: '11:00 AM – 01:30 PM', type: 'study', title: 'Midday Past-Paper Sprint Block 2 (2.5h)', desc: 'Solve MIST past Term Final questions under timed conditions' },
         { time: '01:30 – 02:30 PM', type: 'break', title: 'Prayer, Lunch & 20m Power Rest', desc: 'Recharge before starting the Manikdi tuition loop' },
-        { time: '02:30 – 03:45 PM', type: 'tuition', title: `Tuition 1 (1.25h): ${s(0)}`, desc: sNote(0) },
-        { time: '04:00 – 05:15 PM', type: 'tuition', title: `Tuition 2 (1.25h): ${s(1)}`, desc: sNote(1) },
-        { time: '05:30 – 06:45 PM', type: 'tuition', title: `Tuition 3 (1.25h): ${s(2)}`, desc: sNote(2) },
-        { time: '07:00 – 08:15 PM', type: 'tuition', title: `Tuition 4 (1.25h): ${s(3)}`, desc: sNote(3) },
-        { time: '08:30 – 09:45 PM', type: 'tuition', title: `Tuition 5 (1.25h): ${s(4)}`, desc: sNote(4) },
+        createTuitionBlock('02:30 – 03:45 PM', 0, students, dKey, dur),
+        createTuitionBlock('04:00 – 05:15 PM', 1, students, dKey, dur),
+        createTuitionBlock('05:30 – 06:45 PM', 2, students, dKey, dur),
+        createTuitionBlock('07:00 – 08:15 PM', 3, students, dKey, dur),
+        createTuitionBlock('08:30 – 09:45 PM', 4, students, dKey, dur),
         { time: '10:15 – 11:15 PM', type: 'study', title: 'Night Consolidation Block 3 (1.0h)', desc: 'Light formula review, design code tables & next-day setup after dinner' }
       ];
     }
   } else {
     // Split Shift: 1 Morning Local Tuition + 4 Afternoon/Evening Tuitions
-    return [
+    blocks = [
       { time: '07:30 – 10:15 AM', type: 'study', title: 'Morning Study Block 1 (2.75h)', desc: 'Core MIST Term Final numerical problem solving' },
-      { time: '10:30 – 11:45 AM', type: 'tuition', title: `Morning Tuition 1 (1.25h): ${s(0)}`, desc: 'Local Manikdi / Home slot so zero long commute in morning' },
+      createTuitionBlock('10:30 – 11:45 AM', 0, students, dKey, dur),
       { time: '12:00 – 02:30 PM', type: 'study', title: 'Midday Study Block 2 (2.5h)', desc: 'MIST past paper questions & design checks' },
       { time: '02:30 – 03:30 PM', type: 'break', title: 'Prayer, Lunch & Short Rest', desc: 'Recharge at home in Manikdi' },
-      { time: '03:30 – 04:45 PM', type: 'tuition', title: `Tuition 2 (1.25h): ${s(1)}`, desc: sNote(1) },
-      { time: '05:00 – 06:15 PM', type: 'tuition', title: `Tuition 3 (1.25h): ${s(2)}`, desc: sNote(2) },
-      { time: '06:30 – 07:45 PM', type: 'tuition', title: `Tuition 4 (1.25h): ${s(3)}`, desc: sNote(3) },
-      { time: '08:00 – 09:15 PM', type: 'tuition', title: `Tuition 5 (1.25h): ${s(4)}`, desc: sNote(4) },
+      createTuitionBlock('03:30 – 04:45 PM', 1, students, dKey, dur),
+      createTuitionBlock('05:00 – 06:15 PM', 2, students, dKey, dur),
+      createTuitionBlock('06:30 – 07:45 PM', 3, students, dKey, dur),
+      createTuitionBlock('08:00 – 09:15 PM', 4, students, dKey, dur),
       { time: '09:45 – 11:00 PM', type: 'study', title: 'Night Study Block 3 (1.25h)', desc: 'Wrap up tuitions earlier & get 75m of night revision' }
     ];
   }
+
+  // Look for any sessions shifted IN to this day from other days
+  const shiftedIn = (state.adjustments || []).filter(a => a.targetDay === dKey && a.status === 'shifted');
+  shiftedIn.forEach((adj) => {
+    const origStudent = state.tuitions.find(t => t.id === adj.tuitionId) || { id: adj.tuitionId, name: adj.studentName || 'Student', area: 'Manikdi' };
+    blocks.push({
+      time: adj.shiftTime || 'Adjusted Slot',
+      type: 'tuition',
+      isShiftedIn: true,
+      student: origStudent,
+      tuitionId: adj.tuitionId,
+      dayKey: dKey,
+      title: `✨ Makeup Tuition: ${origStudent.name} (Shifted from ${adj.originalDay})`,
+      desc: adj.reason ? `Shifted from ${adj.originalDay}: ${adj.reason}` : `Makeup class rescheduled from ${adj.originalDay}.`,
+      status: 'shifted-in',
+      adjustment: adj
+    });
+  });
+
+  return blocks;
 }
 
 function renderRoutineView() {
@@ -472,7 +557,72 @@ function renderRoutineView() {
     : (state.settings.routineMode === 'eve' ? '7.5h Study' : '2.5h Skill');
   if (badgeEl) badgeEl.textContent = `5 Tuitions • ${studyHrsText}`;
 
-  // Render Daily Timeline
+  // 1. Render Active Day Adjustments Banner
+  const banner = document.getElementById('dayAdjustmentsBanner');
+  if (banner) {
+    const dayAdjustments = (state.adjustments || []).filter(a => a.originalDay === dayObj.key || a.targetDay === dayObj.key);
+    if (dayAdjustments.length > 0) {
+      banner.classList.remove('hidden');
+      let badgesHtml = '';
+      let onlineCount = 0;
+      let shiftedOutCount = 0;
+      let cancelledCount = 0;
+      let shiftedInCount = 0;
+
+      dayAdjustments.forEach(a => {
+        if (a.originalDay === dayObj.key) {
+          if (a.status === 'online') onlineCount++;
+          else if (a.status === 'shifted') shiftedOutCount++;
+          else if (a.status === 'cancelled') cancelledCount++;
+        }
+        if (a.targetDay === dayObj.key && a.status === 'shifted') {
+          shiftedInCount++;
+        }
+      });
+
+      if (onlineCount > 0) {
+        badgesHtml += `<span class="rounded-lg bg-cyan-500/15 border border-cyan-500/30 px-2.5 py-1 text-xs font-bold text-cyan-300 font-sans">💻 ${onlineCount} Online Class</span>`;
+      }
+      if (shiftedOutCount > 0) {
+        badgesHtml += `<span class="rounded-lg bg-violet-500/15 border border-violet-500/30 px-2.5 py-1 text-xs font-bold text-violet-300 font-sans">⏩ ${shiftedOutCount} Shifted Out</span>`;
+      }
+      if (shiftedInCount > 0) {
+        badgesHtml += `<span class="rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-xs font-bold text-emerald-300 font-sans">✨ ${shiftedInCount} Makeup Added</span>`;
+      }
+      if (cancelledCount > 0) {
+        badgesHtml += `<span class="rounded-lg bg-rose-500/15 border border-rose-500/30 px-2.5 py-1 text-xs font-bold text-rose-300 font-sans">❌ ${cancelledCount} Cancelled</span>`;
+      }
+
+      banner.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-sm">⚡</span>
+          <div>
+            <h4 class="text-xs font-extrabold text-white font-sans">Schedule Adjustments Active for ${dayObj.name}</h4>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              ${badgesHtml}
+            </div>
+          </div>
+        </div>
+        <button id="btnClearTodayAdjustments" type="button" class="rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.12] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition active:scale-95">
+          Reset All for ${dayObj.name}
+        </button>
+      `;
+
+      document.getElementById('btnClearTodayAdjustments')?.addEventListener('click', async () => {
+        if (confirm(`Reset all schedule adjustments for ${dayObj.name} back to regular routine?`)) {
+          if (state.currentUser) {
+            await clearDayAdjustments(state.currentUser.uid, dayObj.key);
+            showToast(`Schedule reset for ${dayObj.name} ✓`, 'info');
+          }
+        }
+      });
+    } else {
+      banner.classList.add('hidden');
+      banner.innerHTML = '';
+    }
+  }
+
+  // 2. Render Daily Timeline
   const timeline = buildDailyScheduleBlocks(dayObj);
   const listEl = document.getElementById('dailyTimelineList');
   if (listEl) {
@@ -487,53 +637,190 @@ function renderRoutineView() {
         cardBorder = 'glass-surface border-l-4 border-l-amber-500 shadow-[0_4px_20px_rgba(245,158,11,0.06)]';
         typeLabel = 'MIST Study Block';
       } else if (item.type === 'tuition') {
-        badgeStyle = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/25';
-        cardBorder = 'glass-surface border-l-4 border-l-indigo-500 shadow-[0_4px_20px_rgba(99,102,241,0.08)]';
-        typeLabel = 'Tuition Session';
+        if (item.isOnline) {
+          badgeStyle = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+          cardBorder = 'glass-surface border-l-4 border-l-cyan-400 shadow-[0_4px_20px_rgba(6,182,212,0.12)]';
+          typeLabel = `💻 Online (${item.onlinePlatform || 'Meet'})`;
+        } else if (item.isShifted) {
+          badgeStyle = 'bg-violet-500/15 text-violet-300 border-violet-500/30';
+          cardBorder = 'glass-surface border-l-4 border-l-violet-400/70 border-dashed opacity-80';
+          typeLabel = `⏩ Shifted to ${item.targetDay}`;
+        } else if (item.isCancelled) {
+          badgeStyle = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+          cardBorder = 'glass-surface border-l-4 border-l-rose-500/60 opacity-60';
+          typeLabel = '❌ Cancelled Today';
+        } else if (item.isShiftedIn) {
+          badgeStyle = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+          cardBorder = 'glass-surface border-l-4 border-l-emerald-400 shadow-[0_4px_20px_rgba(16,185,129,0.12)]';
+          typeLabel = `✨ Makeup (From ${item.originalDay})`;
+        } else {
+          badgeStyle = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/25';
+          cardBorder = 'glass-surface border-l-4 border-l-indigo-500 shadow-[0_4px_20px_rgba(99,102,241,0.08)]';
+          typeLabel = '🚗 Tuition (In-Person)';
+        }
+      }
+
+      // Action buttons for tuition slot
+      let actionButtons = '';
+      if (item.type === 'tuition' && item.tuitionId) {
+        let joinBtn = '';
+        if (item.isOnline && item.onlineLink) {
+          const href = item.onlineLink.startsWith('http') ? item.onlineLink : `https://${item.onlineLink}`;
+          joinBtn = `
+            <a href="${href}" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow-sm shadow-cyan-500/20">
+              <span>🎥</span> Join Meet
+            </a>
+          `;
+        }
+
+        actionButtons = `
+          <div class="flex items-center gap-2 pt-1 sm:pt-0">
+            ${joinBtn}
+            <button type="button" class="btn-adjust-slot rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.12] hover:border-amber-500/40 px-3 py-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 transition-all active:scale-95 flex items-center gap-1.5 shadow-sm" data-tuition-id="${item.tuitionId}" data-day="${dayObj.key}">
+              <span>⚡</span> Adjust
+            </button>
+          </div>
+        `;
       }
 
       const row = document.createElement('div');
       row.className = `flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between transition-all hover:translate-x-1 ${cardBorder}`;
       row.innerHTML = `
-        <div class="space-y-1">
+        <div class="space-y-1 flex-1">
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-mono text-xs font-bold text-white bg-black/60 px-2.5 py-1 rounded-lg border border-white/10 shadow-inner">${item.time}</span>
             <span class="rounded-lg border px-2.5 py-0.5 text-[11px] font-semibold font-sans ${badgeStyle}">${typeLabel}</span>
           </div>
-          <h4 class="text-sm font-bold text-white pt-1 font-sans">${item.title}</h4>
+          <h4 class="text-sm font-bold text-white pt-1 font-sans ${item.isCancelled ? 'line-through text-slate-400' : ''}">${item.title}</h4>
           <p class="text-xs text-slate-400 leading-relaxed font-body">${item.desc}</p>
         </div>
+        ${actionButtons}
       `;
       listEl.appendChild(row);
     });
+
+    // Attach click listeners to all Adjust Slot buttons in timeline
+    listEl.querySelectorAll('.btn-adjust-slot').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tId = btn.getAttribute('data-tuition-id');
+        const day = btn.getAttribute('data-day');
+        openAdjustmentModal(tId, day);
+      });
+    });
   }
 
-  // Render Manikdi Route Sequence Cards
+  // 3. Render Manikdi Route Sequence Cards (Dynamic transit recalculation)
   const routeContainer = document.getElementById('routeStepCards');
   if (routeContainer) {
     const trackStudents = getTrackStudents(dayObj.track);
     routeContainer.innerHTML = '';
 
+    let physicalStops = 0;
+
     trackStudents.forEach((st, idx) => {
+      const adj = (state.adjustments || []).find(a => a.tuitionId === st.id && a.originalDay === dayObj.key);
+      const isOnline = adj && adj.status === 'online';
+      const isShifted = adj && adj.status === 'shifted';
+      const isCancelled = adj && adj.status === 'cancelled';
+
+      let statusBadge = `<span class="rounded-lg bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-slate-300 border border-white/10 font-mono">${st.daysPerWeek}d/wk</span>`;
+      let cardStyle = 'border-white/10 bg-black/40 hover:border-indigo-500/40 hover:bg-white/[0.04]';
+      let avatarStyle = 'bg-gradient-to-tr from-violet-600 to-cyan-500 text-white';
+      let nameStyle = 'text-white';
+
+      if (isOnline) {
+        statusBadge = `<span class="rounded-lg bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 text-[11px] font-bold text-cyan-300 font-sans">💻 Online (No Commute)</span>`;
+        cardStyle = 'border-cyan-500/30 bg-cyan-950/20 hover:border-cyan-500/50';
+        avatarStyle = 'bg-gradient-to-tr from-cyan-600 to-teal-500 text-white';
+      } else if (isShifted) {
+        statusBadge = `<span class="rounded-lg bg-violet-500/15 border border-violet-500/30 px-2 py-0.5 text-[11px] font-bold text-violet-300 font-sans">⏩ Shifted to ${adj.targetDay}</span>`;
+        cardStyle = 'border-white/[0.06] bg-black/20 opacity-60';
+        avatarStyle = 'bg-slate-700 text-slate-400';
+        nameStyle = 'line-through text-slate-400';
+      } else if (isCancelled) {
+        statusBadge = `<span class="rounded-lg bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 text-[11px] font-bold text-rose-300 font-sans">❌ Cancelled</span>`;
+        cardStyle = 'border-rose-500/20 bg-rose-950/10 opacity-60';
+        avatarStyle = 'bg-rose-900/60 text-rose-300';
+        nameStyle = 'line-through text-slate-400';
+      } else {
+        physicalStops++;
+      }
+
       const step = document.createElement('div');
-      step.className = 'flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs transition-all hover:border-indigo-500/40 hover:bg-white/[0.04]';
+      step.className = `flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-xs transition-all ${cardStyle}`;
       step.innerHTML = `
         <div class="flex items-center gap-3">
-          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-cyan-500 font-extrabold text-white text-xs shadow-md ring-1 ring-white/20">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl font-extrabold text-xs shadow-md ring-1 ring-white/20 ${avatarStyle}">
             ${idx + 1}
           </span>
           <div>
-            <p class="font-bold text-white font-sans">${st.name}</p>
+            <p class="font-bold font-sans ${nameStyle}">${st.name}</p>
             <p class="text-[11px] text-slate-400 font-body">${st.area}</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <span class="rounded-lg bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-slate-300 border border-white/10 font-mono">${st.daysPerWeek}d/wk</span>
-          <span class="font-mono font-bold text-[11px] ${st.paid ? 'text-emerald-400' : 'text-slate-400'}">${Number(st.fee).toLocaleString()}</span>
+          ${statusBadge}
+          <button type="button" class="btn-adjust-route-step text-slate-500 hover:text-amber-300 transition text-xs font-bold" data-tuition-id="${st.id}" data-day="${dayObj.key}" title="Adjust Schedule">⚡</button>
         </div>
       `;
       routeContainer.appendChild(step);
     });
+
+    // Check for makeup students shifted in
+    const shiftedIn = (state.adjustments || []).filter(a => a.targetDay === dayObj.key && a.status === 'shifted');
+    shiftedIn.forEach((adj, mIdx) => {
+      const origStudent = state.tuitions.find(t => t.id === adj.tuitionId) || { id: adj.tuitionId, name: adj.studentName || 'Student', area: 'Manikdi' };
+      physicalStops++;
+
+      const step = document.createElement('div');
+      step.className = 'flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-3.5 py-2.5 text-xs transition-all hover:border-emerald-500/50';
+      step.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl font-extrabold text-xs bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md ring-1 ring-white/20">
+            +${mIdx + 1}
+          </span>
+          <div>
+            <p class="font-bold font-sans text-white">${origStudent.name}</p>
+            <p class="text-[11px] text-emerald-300 font-body">${origStudent.area} (Makeup)</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-bold text-emerald-300 font-sans">✨ From ${adj.originalDay}</span>
+          <button type="button" class="btn-adjust-route-step text-slate-500 hover:text-amber-300 transition text-xs font-bold" data-tuition-id="${origStudent.id}" data-day="${dayObj.key}" title="Adjust Schedule">⚡</button>
+        </div>
+      `;
+      routeContainer.appendChild(step);
+    });
+
+    // Attach click listeners to route adjust icons
+    routeContainer.querySelectorAll('.btn-adjust-route-step').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tId = btn.getAttribute('data-tuition-id');
+        const day = btn.getAttribute('data-day');
+        openAdjustmentModal(tId, day);
+      });
+    });
+
+    // Dynamic Transit Summary update
+    const transitEstText = physicalStops === 0
+      ? '0 mins (All online/off)'
+      : `~${physicalStops * 9}–${physicalStops * 11} mins (${physicalStops} home visits)`;
+
+    const transitSubText = physicalStops === 5
+      ? 'Average inter-session travel between local Manikdi nodes is only 8–12 mins.'
+      : `${5 - physicalStops} session(s) adjusted (online/shifted/off) — Dhaka transit reduced!`;
+
+    const summaryBox = routeContainer.nextElementSibling;
+    if (summaryBox) {
+      summaryBox.innerHTML = `
+        <div class="flex items-center justify-between text-slate-300 font-semibold font-body">
+          <span>Active Transit Loop:</span>
+          <span class="text-emerald-400 font-mono font-bold">${transitEstText}</span>
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed font-body">${transitSubText}</p>
+      `;
+    }
   }
 }
 
@@ -757,6 +1044,23 @@ function renderTuitionsView() {
           <span class="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300 font-sans">${trackBadge}</span>
           <span class="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-300 font-mono">Target: ${t.daysPerWeek}d/wk</span>
         </div>
+
+        <!-- Active Schedule Adjustment Pills -->
+        ${(() => {
+          const sAdjs = (state.adjustments || []).filter(a => a.tuitionId === t.id);
+          if (sAdjs.length === 0) return '';
+          let chips = '';
+          sAdjs.forEach(a => {
+            if (a.status === 'online') {
+              chips += `<span class="rounded-lg bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300">💻 Online (${a.originalDay})</span>`;
+            } else if (a.status === 'shifted') {
+              chips += `<span class="rounded-lg bg-violet-500/15 border border-violet-500/30 px-2 py-0.5 text-[10px] font-bold text-violet-300">⏩ ${a.originalDay} → ${a.targetDay}</span>`;
+            } else if (a.status === 'cancelled') {
+              chips += `<span class="rounded-lg bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 text-[10px] font-bold text-rose-300">❌ Off (${a.originalDay})</span>`;
+            }
+          });
+          return `<div class="flex flex-wrap items-center gap-1.5 pt-1">${chips}</div>`;
+        })()}
       </div>
 
       <!-- Weekly Progress & Actions -->
@@ -778,7 +1082,7 @@ function renderTuitionsView() {
             <button type="button" data-action="inc" data-id="${t.id}" class="tuition-action-btn rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 px-3.5 py-1.5 text-xs font-bold text-white active:scale-95 transition-all shadow-md shadow-indigo-600/30 ring-1 ring-white/20">+ Day</button>
           </div>
 
-          <!-- Paid, Edit, Delete Controls -->
+          <!-- Paid, Adjust, Edit, Delete Controls -->
           <div class="flex items-center gap-1.5">
             <button type="button" data-action="paid" data-id="${t.id}" class="tuition-action-btn rounded-xl px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 ${
               t.paid
@@ -786,6 +1090,9 @@ function renderTuitionsView() {
                 : 'border-white/10 bg-white/[0.04] text-slate-400 hover:text-white hover:border-white/20'
             }">
               ${t.paid ? '✓ Fee Paid' : 'Mark Paid'}
+            </button>
+            <button type="button" data-action="adjust" data-id="${t.id}" class="tuition-action-btn rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 transition-all active:scale-95 flex items-center gap-1" title="Adjust Schedule (Shift, Cancel, Online)">
+              <span>⚡</span> Adjust
             </button>
             <button type="button" data-action="edit" data-id="${t.id}" class="tuition-action-btn rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-all active:scale-95">
               Edit
@@ -815,7 +1122,7 @@ function renderTuitionsView() {
 }
 
 /**
- * Handle tuition action clicks (inc, dec, paid, edit, delete, move up/down)
+ * Handle tuition action clicks (inc, dec, paid, edit, delete, move up/down, adjust)
  */
 async function handleTuitionAction(action, id) {
   if (!state.currentUser || !id) return;
@@ -835,6 +1142,8 @@ async function handleTuitionAction(action, id) {
     const nextPaid = !student.paid;
     await updateTuition(uid, id, { paid: nextPaid });
     showToast(nextPaid ? `Marked ${student.name} as paid ✓` : `Marked ${student.name} as unpaid`, 'info');
+  } else if (action === 'adjust') {
+    openAdjustmentModal(id, state.settings.selectedDay || 'Sun');
   } else if (action === 'edit' || action === 'inline-edit') {
     openTuitionModal(student);
   } else if (action === 'delete') {
@@ -1135,6 +1444,171 @@ function closeDeleteModal() {
 }
 
 // ==============================================================
+// 10B. SESSION SCHEDULE ADJUSTMENT MODAL LOGIC (Shift, Cancel, Online)
+// ==============================================================
+function openAdjustmentModal(tuitionId, dayKey = null) {
+  const student = state.tuitions.find(t => t.id === tuitionId);
+  if (!student) return;
+
+  const targetDay = dayKey || state.settings.selectedDay || 'Sun';
+  const modal = document.getElementById('sessionAdjustModal');
+  if (!modal) return;
+
+  document.getElementById('adjustModalStudentName').textContent = student.name;
+  document.getElementById('adjustModalDayName').textContent = targetDay;
+  document.getElementById('adjustTuitionId').value = student.id;
+  document.getElementById('adjustOriginalDay').value = targetDay;
+
+  // Check if an existing adjustment is stored for this student on this day
+  const existingAdj = (state.adjustments || []).find(a => a.tuitionId === student.id && a.originalDay === targetDay);
+  const currentStatus = existingAdj ? existingAdj.status : 'normal';
+
+  setAdjustStatusInModal(currentStatus);
+
+  if (existingAdj) {
+    if (existingAdj.onlinePlatform) document.getElementById('adjustOnlinePlatform').value = existingAdj.onlinePlatform;
+    if (existingAdj.onlineLink) document.getElementById('adjustOnlineLink').value = existingAdj.onlineLink;
+    if (existingAdj.reason && existingAdj.status === 'online') document.getElementById('adjustOnlineNote').value = existingAdj.reason;
+
+    if (existingAdj.targetDay) document.getElementById('adjustTargetDay').value = existingAdj.targetDay;
+    if (existingAdj.shiftTime) document.getElementById('adjustShiftTime').value = existingAdj.shiftTime;
+    if (existingAdj.reason && existingAdj.status === 'shifted') document.getElementById('adjustShiftNote').value = existingAdj.reason;
+
+    if (existingAdj.reason && existingAdj.status === 'cancelled') document.getElementById('adjustCancelReason').value = existingAdj.reason;
+  } else {
+    // Defaults
+    document.getElementById('adjustOnlinePlatform').value = 'Google Meet';
+    document.getElementById('adjustOnlineLink').value = '';
+    document.getElementById('adjustOnlineNote').value = '';
+    document.getElementById('adjustTargetDay').value = targetDay === 'Sun' ? 'Tue' : (targetDay === 'Tue' ? 'Wed' : 'Fri');
+    document.getElementById('adjustShiftTime').value = '04:00 PM';
+    document.getElementById('adjustShiftNote').value = '';
+    document.getElementById('adjustCancelReason').value = '';
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeAdjustmentModal() {
+  const modal = document.getElementById('sessionAdjustModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setAdjustStatusInModal(status) {
+  const statusInput = document.getElementById('adjustCurrentStatus');
+  if (statusInput) statusInput.value = status;
+
+  // Highlight status buttons
+  document.querySelectorAll('.adjust-status-choice-btn').forEach(btn => {
+    const s = btn.getAttribute('data-status');
+    if (s === status) {
+      if (s === 'normal') {
+        btn.className = 'adjust-status-choice-btn rounded-2xl border border-indigo-500/40 bg-gradient-to-tr from-violet-600/30 to-indigo-600/20 p-3 text-left transition-all ring-1 ring-indigo-500/50 space-y-1 shadow-lg shadow-indigo-500/10';
+      } else if (s === 'online') {
+        btn.className = 'adjust-status-choice-btn rounded-2xl border border-cyan-500/40 bg-gradient-to-tr from-cyan-600/30 to-teal-600/20 p-3 text-left transition-all ring-1 ring-cyan-500/50 space-y-1 shadow-lg shadow-cyan-500/10';
+      } else if (s === 'shifted') {
+        btn.className = 'adjust-status-choice-btn rounded-2xl border border-violet-500/40 bg-gradient-to-tr from-violet-600/30 to-indigo-600/20 p-3 text-left transition-all ring-1 ring-violet-500/50 space-y-1 shadow-lg shadow-violet-500/10';
+      } else if (s === 'cancelled') {
+        btn.className = 'adjust-status-choice-btn rounded-2xl border border-rose-500/40 bg-gradient-to-tr from-rose-600/30 to-red-600/20 p-3 text-left transition-all ring-1 ring-rose-500/50 space-y-1 shadow-lg shadow-rose-500/10';
+      }
+    } else {
+      btn.className = 'adjust-status-choice-btn rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all hover:bg-white/[0.08] hover:border-white/20 active:scale-95 space-y-1';
+    }
+  });
+
+  // Toggle contextual input panels
+  const onlineFields = document.getElementById('adjustOnlineFields');
+  const shiftFields = document.getElementById('adjustShiftFields');
+  const cancelFields = document.getElementById('adjustCancelFields');
+  const normalNotice = document.getElementById('adjustNormalNotice');
+
+  if (onlineFields) onlineFields.classList.toggle('hidden', status !== 'online');
+  if (shiftFields) shiftFields.classList.toggle('hidden', status !== 'shifted');
+  if (cancelFields) cancelFields.classList.toggle('hidden', status !== 'cancelled');
+  if (normalNotice) normalNotice.classList.toggle('hidden', status !== 'normal');
+}
+
+async function handleSaveAdjustment() {
+  if (!state.currentUser) return;
+  const uid = state.currentUser.uid;
+  const tuitionId = document.getElementById('adjustTuitionId').value;
+  const originalDay = document.getElementById('adjustOriginalDay').value;
+  const status = document.getElementById('adjustCurrentStatus').value;
+  const student = state.tuitions.find(t => t.id === tuitionId);
+  if (!student) return;
+
+  const adjId = `${tuitionId}_${originalDay}`;
+
+  try {
+    if (status === 'normal') {
+      await deleteSessionAdjustment(uid, adjId);
+      showToast(`Reverted ${student.name} to regular in-person schedule ✓`, 'info');
+    } else if (status === 'online') {
+      const platform = document.getElementById('adjustOnlinePlatform').value;
+      const link = document.getElementById('adjustOnlineLink').value.trim();
+      const note = document.getElementById('adjustOnlineNote').value.trim();
+      await saveSessionAdjustment(uid, {
+        id: adjId,
+        tuitionId,
+        studentName: student.name,
+        originalDay,
+        status: 'online',
+        onlinePlatform: platform,
+        onlineLink: link,
+        reason: note
+      });
+      showToast(`Marked ${student.name} as Online Class (${platform}) ✓`, 'success');
+    } else if (status === 'shifted') {
+      const targetDay = document.getElementById('adjustTargetDay').value;
+      const shiftTime = document.getElementById('adjustShiftTime').value.trim() || 'Adjusted Slot';
+      const shiftNote = document.getElementById('adjustShiftNote').value.trim();
+      await saveSessionAdjustment(uid, {
+        id: adjId,
+        tuitionId,
+        studentName: student.name,
+        originalDay,
+        status: 'shifted',
+        targetDay,
+        shiftTime,
+        reason: shiftNote
+      });
+      showToast(`Shifted ${student.name} to ${targetDay} at ${shiftTime} ✓`, 'success');
+    } else if (status === 'cancelled') {
+      const cancelReason = document.getElementById('adjustCancelReason').value.trim();
+      await saveSessionAdjustment(uid, {
+        id: adjId,
+        tuitionId,
+        studentName: student.name,
+        originalDay,
+        status: 'cancelled',
+        reason: cancelReason
+      });
+      showToast(`Cancelled ${student.name} for today (1.25h study freed) ✓`, 'info');
+    }
+
+    closeAdjustmentModal();
+  } catch (err) {
+    showToast('Failed to save adjustment: ' + err.message, 'error');
+  }
+}
+
+async function handleResetAdjustment() {
+  if (!state.currentUser) return;
+  const uid = state.currentUser.uid;
+  const tuitionId = document.getElementById('adjustTuitionId').value;
+  const originalDay = document.getElementById('adjustOriginalDay').value;
+  const adjId = `${tuitionId}_${originalDay}`;
+
+  try {
+    await deleteSessionAdjustment(uid, adjId);
+    showToast('Reset to regular scheduled session ✓', 'info');
+    closeAdjustmentModal();
+  } catch (err) {
+    showToast('Failed to reset: ' + err.message, 'error');
+  }
+}
+
+// ==============================================================
 // 11. THEME SWITCHER
 // ==============================================================
 function setupTheme() {
@@ -1356,6 +1830,30 @@ function setupEventListeners() {
       await deleteTuition(state.currentUser.uid, state.pendingDeleteId);
       showToast('Student removed ✓', 'info');
       closeDeleteModal();
+    }
+  });
+
+  // Session Schedule Adjustment Modal listeners
+  document.getElementById('btnCloseAdjustModal')?.addEventListener('click', closeAdjustmentModal);
+  document.getElementById('btnCancelAdjustModal')?.addEventListener('click', closeAdjustmentModal);
+  document.getElementById('btnSaveAdjustment')?.addEventListener('click', handleSaveAdjustment);
+  document.getElementById('btnResetAdjustment')?.addEventListener('click', handleResetAdjustment);
+
+  // Status choice buttons inside adjustment modal
+  document.querySelectorAll('.adjust-status-choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const status = btn.getAttribute('data-status');
+      setAdjustStatusInModal(status);
+    });
+  });
+
+  // Generate Google Meet Link quick button
+  document.getElementById('btnGenerateMeetLink')?.addEventListener('click', () => {
+    const meetInput = document.getElementById('adjustOnlineLink');
+    if (meetInput) {
+      const randCode = Math.random().toString(36).substring(2, 5) + '-' + Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 5);
+      meetInput.value = `https://meet.google.com/${randCode}`;
+      showToast('Generated Google Meet link ✓', 'info');
     }
   });
 

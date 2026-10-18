@@ -443,7 +443,9 @@ function getLocalData(uid) {
   const raw = localStorage.getItem(key);
   if (raw) {
     try {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (!parsed.adjustments) parsed.adjustments = [];
+      return parsed;
     } catch (e) {
       console.warn("Corrupt local sandbox data, resetting:", e);
     }
@@ -459,7 +461,8 @@ function getLocalData(uid) {
     settings: { ...defaultSettings },
     tuitions: JSON.parse(JSON.stringify(defaultTuitions)),
     studyDays: JSON.parse(JSON.stringify(defaultStudyDays)),
-    history: []
+    history: [],
+    adjustments: []
   };
   localStorage.setItem(key, JSON.stringify(fresh));
   return fresh;
@@ -688,6 +691,35 @@ export function subscribeHistory(uid, onData) {
     onData(items);
   }, (err) => {
     console.error("[Firestore] History listener error:", err);
+  });
+}
+
+/**
+ * Subscribe to Session Adjustments Collection (Shifted, Cancelled, Online)
+ */
+export function subscribeAdjustments(uid, onData, onError) {
+  if (!uid) return () => {};
+
+  const firestore = initFirestore();
+  if (isDemo() || !firestore) {
+    const pushData = () => {
+      const data = getLocalData(uid);
+      onData(data.adjustments || []);
+    };
+    pushData();
+    const handler = (e) => onData(e.detail.adjustments || []);
+    localEventTarget.addEventListener(`sync_${uid}`, handler);
+    return () => localEventTarget.removeEventListener(`sync_${uid}`, handler);
+  }
+
+  const adjColl = collection(firestore, 'users', uid, 'adjustments');
+  return onSnapshot(adjColl, (snapshot) => {
+    const items = [];
+    snapshot.forEach((d) => items.push({ id: d.id, ...d.data() }));
+    onData(items);
+  }, (err) => {
+    console.error("[Firestore] Adjustments listener error:", err);
+    if (onError) onError(err);
   });
 }
 
@@ -1074,6 +1106,12 @@ export async function exportAllUserData(uid) {
     const history = [];
     historySnap.forEach(d => history.push({ id: d.id, ...d.data() }));
 
+    // Read adjustments
+    const adjColl = collection(firestore, 'users', uid, 'adjustments');
+    const adjSnap = await getDocs(adjColl);
+    const adjustments = [];
+    adjSnap.forEach(d => adjustments.push({ id: d.id, ...d.data() }));
+
     return {
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
@@ -1082,10 +1120,120 @@ export async function exportAllUserData(uid) {
       settings: userData.settings || defaultSettings,
       tuitions,
       studyDays,
-      history
+      history,
+      adjustments
     };
   } catch (err) {
     console.error("[Firestore] Export failed:", err);
+    throw err;
+  }
+}
+
+/**
+ * Save or update a session adjustment (Shifted, Cancelled, Online)
+ */
+export async function saveSessionAdjustment(uid, adjustment) {
+  if (!uid || !adjustment.id) return;
+  notifySyncStatus('syncing', 'Updating schedule adjustment...');
+
+  const item = {
+    ...adjustment,
+    updatedAt: new Date().toISOString()
+  };
+
+  const firestore = initFirestore();
+  if (isDemo() || !firestore) {
+    const data = getLocalData(uid);
+    if (!data.adjustments) data.adjustments = [];
+    const idx = data.adjustments.findIndex(a => a.id === item.id);
+    if (idx !== -1) {
+      data.adjustments[idx] = item;
+    } else {
+      data.adjustments.push(item);
+    }
+    saveLocalData(uid, data);
+    return item;
+  }
+
+  try {
+    const docRef = doc(firestore, 'users', uid, 'adjustments', item.id);
+    await setDoc(docRef, {
+      ...item,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    notifySyncStatus('synced', 'Schedule adjustment saved ✓');
+    return item;
+  } catch (err) {
+    console.error("[Firestore] Save adjustment error:", err);
+    notifySyncStatus('error', 'Failed to save adjustment');
+    throw err;
+  }
+}
+
+/**
+ * Delete a session adjustment (reverts back to normal routine)
+ */
+export async function deleteSessionAdjustment(uid, adjustmentId) {
+  if (!uid || !adjustmentId) return;
+  notifySyncStatus('syncing', 'Reverting schedule adjustment...');
+
+  const firestore = initFirestore();
+  if (isDemo() || !firestore) {
+    const data = getLocalData(uid);
+    if (data.adjustments) {
+      data.adjustments = data.adjustments.filter(a => a.id !== adjustmentId);
+      saveLocalData(uid, data);
+    }
+    return;
+  }
+
+  try {
+    const docRef = doc(firestore, 'users', uid, 'adjustments', adjustmentId);
+    await deleteDoc(docRef);
+    notifySyncStatus('synced', 'Adjustment removed ✓');
+  } catch (err) {
+    console.error("[Firestore] Delete adjustment error:", err);
+    notifySyncStatus('error', 'Failed to remove adjustment');
+    throw err;
+  }
+}
+
+/**
+ * Clear all session adjustments for a specific day or all days
+ */
+export async function clearDayAdjustments(uid, dayKey = null) {
+  if (!uid) return;
+  notifySyncStatus('syncing', 'Clearing adjustments...');
+
+  const firestore = initFirestore();
+  if (isDemo() || !firestore) {
+    const data = getLocalData(uid);
+    if (data.adjustments) {
+      if (dayKey) {
+        data.adjustments = data.adjustments.filter(a => a.originalDay !== dayKey && a.targetDay !== dayKey);
+      } else {
+        data.adjustments = [];
+      }
+      saveLocalData(uid, data);
+    }
+    return;
+  }
+
+  try {
+    const adjColl = collection(firestore, 'users', uid, 'adjustments');
+    const snap = await getDocs(adjColl);
+    const batch = writeBatch(firestore);
+    snap.forEach(d => {
+      const val = d.data();
+      if (!dayKey || val.originalDay === dayKey || val.targetDay === dayKey) {
+        batch.delete(d.ref);
+      }
+    });
+    await batch.commit();
+    notifySyncStatus('synced', 'Adjustments cleared ✓');
+  } catch (err) {
+    console.error("[Firestore] Clear adjustments error:", err);
+    notifySyncStatus('error', 'Failed to clear adjustments');
     throw err;
   }
 }
